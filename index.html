@@ -16,6 +16,10 @@
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Google Firebase SDK (Compat Version for seamless single-file integration) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -84,6 +88,14 @@
     .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     html:not(.dark) ::-webkit-scrollbar-track { background: #f1f5f9; }
     html:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
   </style>
 </head>
 
@@ -102,7 +114,7 @@
             <i class="fa-solid fa-vault"></i>
           </div>
           <h2 class="text-2xl font-black text-white mb-1">تسجيل الدخول للنظام المالي</h2>
-          <p class="text-xs text-slate-400">نظام عائلي مستقل لإدارة المصاريف والمدخرات والتنبؤ المالي</p>
+          <p class="text-xs text-slate-400">إدارة المصاريف والمدخرات والتنبؤ المالي مع المزامنة السحابية</p>
         </div>
 
         <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
@@ -210,12 +222,12 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base sm:text-lg font-black tracking-tight flex items-center gap-2" id="headerUserNameBadge">
-              المستشار المالي الذكي
+              حسين يوسف الشهيب
             </h1>
             <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold" id="headerUserSubtitle">
-              إدارة الديون والادخار
+              محلل ومصمم نظم - إمارة المنطقة الشرقية
             </span>
-            <span id="adminBadgeTag" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
+            <span id="adminBadgeTag" class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
               مدير النظام
             </span>
           </div>
@@ -226,6 +238,12 @@
       <!-- Action Buttons & Quick Controls -->
       <div class="flex items-center flex-wrap gap-2 text-xs">
         
+        <!-- Cloud Sync Status Badge Button -->
+        <button onclick="openSettingsModal('cloud')" id="cloudSyncStatusBadge" title="حالة المزامنة السحابية بين أجهزتك (اضغط للضبط)" class="px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <span id="cloudSyncDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+          <span id="cloudSyncLabel" class="font-bold text-[11px] text-slate-300">سحابي (غير متصل)</span>
+        </button>
+
         <!-- Calendar Toggle -->
         <button onclick="toggleCalendarSystem()" id="calendarToggleBtn" title="التبديل بين التقويم الهجري والميلادي" class="px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/80 hover:bg-slate-800 text-slate-200 flex items-center gap-1.5 transition">
           <i class="fa-solid fa-moon text-amber-400 text-xs"></i>
@@ -245,14 +263,17 @@
           </button>
         </div>
 
-        <!-- Month Dropdown Selector -->
-        <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 shadow-inner">
-          <i class="fa-regular fa-calendar-days text-brand-400 ml-1.5 text-xs"></i>
-          <select id="monthSelector" onchange="changeSelectedMonth(this.value)" class="bg-slate-900 font-bold text-white focus:outline-none cursor-pointer text-xs">
+        <!-- Month Dropdown Selector & Add Month -->
+        <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2 py-1 shadow-inner gap-1">
+          <i class="fa-regular fa-calendar-days text-brand-400 text-xs"></i>
+          <select id="monthSelector" onchange="changeSelectedMonth(this.value)" class="bg-slate-900 font-bold text-white focus:outline-none cursor-pointer text-xs pr-1">
           </select>
+          <button onclick="openAddNewMonthPrompt()" title="إضافة شهر مالي جديد يدوياً" class="w-5 h-5 rounded hover:bg-slate-800 text-brand-400 flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
 
-        <!-- Settings & Multi-User Control Panel Button -->
+        <!-- Settings & Control Panel Button -->
         <button onclick="openSettingsModal()" class="px-3 py-1.5 font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
           <i class="fa-solid fa-sliders"></i>
           <span>لوحة التحكم</span>
@@ -297,7 +318,7 @@
           <span id="kpiTotalIncome" class="text-2xl font-black text-emerald-400">0</span>
           <span class="text-xs text-slate-400 mr-1">ريال</span>
         </div>
-        <p id="kpiIncomeSubtext" class="text-[11px] text-slate-400 mt-1 truncate">راتب ثابت + إضافي</p>
+        <p id="kpiIncomeSubtext" class="text-[11px] text-slate-400 mt-1 truncate">راتب: 18,652.30 ريال</p>
         <div class="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500/40"></div>
       </div>
 
@@ -396,6 +417,23 @@
       </div>
     </div>
 
+    <!-- Cloud Sync Realtime Advisory Banner (Visible when offline / local only) -->
+    <div id="cloudSetupAdviceBanner" class="glass-card rounded-2xl p-3.5 sm:p-4 border border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 via-slate-900/40 to-slate-900/40 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 text-sm">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <div>
+          <span class="text-xs font-bold text-white block">مزامنة الجوال وكمبيوتر العمل والمنزل لحظياً</span>
+          <span class="text-[11px] text-slate-400 block">اربط التطبيق بـ Firebase Firestore مجاناً لتتطابق عملياتك على كل أجهزتك تلقائياً.</span>
+        </div>
+      </div>
+      <button onclick="openSettingsModal('cloud')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+        <i class="fa-solid fa-link"></i>
+        <span>إعداد المزامنة السحابية</span>
+      </button>
+    </div>
+
     <!-- Smart Predictive Insights Banner -->
     <div class="glass-card rounded-2xl p-4 sm:p-5 border-l-4 border-l-brand-500 transition-all">
       <div class="flex items-start gap-3">
@@ -408,10 +446,10 @@
               تحليل التنبؤ الذكي ومسار الصرف
               <span id="trendIndicatorBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">سلوك مستقر</span>
             </h3>
-            <span class="text-[11px] text-slate-400 hidden sm:inline" id="predictionBasis">مبني على تحليل الشهور السابقة</span>
+            <span class="text-[11px] text-slate-400 hidden sm:inline" id="predictionBasis">مبني على الشهور المسجلة</span>
           </div>
           <p id="smartInsightsText" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            جارٍ تحليل نمط الإنفاق وتوليد التوصيات المالية...
+            النظام جاهز لمتابعة وتدقيق مصروفاتك للشهر الحالي.
           </p>
         </div>
       </div>
@@ -469,7 +507,7 @@
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-bold flex items-center gap-2">
             <i class="fa-solid fa-scale-unbalanced text-sky-400"></i>
-            مقياس 50/30/20 المالي العالمي وتوجيه المدخرات
+            مقياس 50/30/20 المالي وتوجيه المدخرات
           </h3>
           <span class="text-xs text-slate-400">المؤشر الصحي</span>
         </div>
@@ -607,7 +645,7 @@
     <div class="flex flex-wrap items-center justify-between gap-4 pt-4 pb-2 text-xs text-slate-400 border-t border-slate-800">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-shield-halved text-brand-400"></i>
-        <span>بيئة متعددة الحسابات ومحمية. مهيأة بالكامل للرفع على GitHub Pages.</span>
+        <span>بيئة متعددة الحسابات ومحمية. متوافقة تماماً مع المزامنة السحابية وGitHub Pages.</span>
       </div>
       
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -739,7 +777,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: Settings & Control Panel -->
+  <!-- MODAL 2: Settings & Control Panel (With Cloud Sync Tab) -->
   <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl relative max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -748,8 +786,8 @@
             <i class="fa-solid fa-sliders"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-white">لوحة التحكم والإعدادات</h3>
-            <p class="text-[11px] text-slate-400">إدارة الملف المالي، والراتب والعلاوات، وإدارة حسابات العائلة (للأدمن)</p>
+            <h3 class="text-base font-bold text-white">لوحة التحكم والإعدادات والمزامنة</h3>
+            <p class="text-[11px] text-slate-400">إدارة الملف المالي، الراتب، المزامنة السحابية وحسابات العائلة</p>
           </div>
         </div>
         <button type="button" onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white text-lg">
@@ -758,18 +796,21 @@
       </div>
 
       <!-- Navigation Tabs inside Settings Modal -->
-      <div class="flex border-b border-slate-800 text-xs font-bold gap-2">
-        <button type="button" id="tabBtnProfile" onclick="switchSettingsTab('profile')" class="py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5">
+      <div class="flex border-b border-slate-800 text-xs font-bold gap-2 overflow-x-auto">
+        <button type="button" id="tabBtnProfile" onclick="switchSettingsTab('profile')" class="py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5 whitespace-nowrap">
           <i class="fa-solid fa-user"></i> حسابي والراتب
         </button>
-        <button type="button" id="tabBtnAdminUsers" onclick="switchSettingsTab('users')" class="hidden py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-users-gear text-indigo-400"></i> إدارة الحسابات العائلية (للأدمن)
+        <button type="button" id="tabBtnCloudSync" onclick="switchSettingsTab('cloud')" class="py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 whitespace-nowrap">
+          <i class="fa-solid fa-cloud-bolt text-indigo-400"></i> المزامنة السحابية (Firebase)
+        </button>
+        <button type="button" id="tabBtnAdminUsers" onclick="switchSettingsTab('users')" class="py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 whitespace-nowrap">
+          <i class="fa-solid fa-users-gear text-indigo-400"></i> إدارة الحسابات العائلية
         </button>
       </div>
 
       <!-- TAB 1: Profile & Salary Settings -->
-      <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="space-y-4 text-xs sm:text-sm">
-        <div id="settingsTabProfile" class="space-y-3">
+      <div id="settingsTabProfile" class="space-y-4">
+        <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="space-y-4 text-xs sm:text-sm">
           
           <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
             <h4 class="font-bold text-indigo-300 flex items-center gap-1.5 text-xs">
@@ -850,10 +891,71 @@
               <i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات
             </button>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
 
-      <!-- TAB 2: Multi-User Admin Management (Exclusive to Admin) -->
+      <!-- TAB 2: Cloud Sync (Firebase Integration) -->
+      <div id="settingsTabCloud" class="hidden space-y-4 text-xs sm:text-sm">
+        <div class="p-4 rounded-xl bg-slate-950 border border-indigo-500/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-base"></i>
+              ربط المزامنة الفورية مع Google Firebase
+            </h4>
+            <span id="cloudModalStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+              تخزين محلي فقط
+            </span>
+          </div>
+
+          <p class="text-slate-300 text-xs leading-relaxed">
+            عند تفعيل هذا الخيار، سيتم رفع أي مصروف أو حركة تسجلها من جوالك إلى قاعدة بيانات Firebase السحابية، وستظهر فوراً على كمبيوتر العمل والمنزل بدون الحاجة لتحديث الصفحة!
+          </p>
+
+          <form onsubmit="handleSaveFirebaseConfig(event)" class="space-y-3 pt-2">
+            <div>
+              <label class="block text-slate-300 mb-1 font-semibold">
+                كود إعدادات Firebase (انسخ كود `const firebaseConfig = {...}` من وحدة تحكم Firebase):
+              </label>
+              <textarea id="firebaseConfigTextarea" rows="6" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "...",
+  "projectId": "...",
+  "storageBucket": "...",
+  "messagingSenderId": "...",
+  "appId": "..."
+}' class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none focus:border-brand-500"></textarea>
+              <p class="text-[11px] text-slate-400 mt-1">
+                يمكنك لصق كود الإعداد كاملاً ككائن JavaScript أو JSON كما يعطيه لك موقع Firebase مباشرة.
+              </p>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <button type="button" onclick="disconnectFirebaseSync()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-400 font-bold transition text-xs flex items-center gap-1.5">
+                <i class="fa-solid fa-unlink"></i> إلغاء الربط السحابي
+              </button>
+              
+              <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/30">
+                <i class="fa-solid fa-cloud-check"></i> حفظ واختبار المزامنة السحابية
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2 text-slate-300">
+          <div class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-question text-sky-400"></i>
+            كيف أحصل على هذه المفاتيح في 3 دقائق؟
+          </div>
+          <ol class="list-decimal list-inside space-y-1 text-slate-400 text-[11px] leading-relaxed">
+            <li>افتح موقع <a href="https://console.firebase.google.com/" target="_blank" class="text-brand-400 underline font-bold">Google Firebase Console</a> وسجل بحسابك.</li>
+            <li>اضغط <strong>Create a project</strong> وضع أي اسم (مثال: `my-finance`).</li>
+            <li>اضغط على علامة الويب <strong>`</>`</strong> (Add Web App) وانسخ محتوى `firebaseConfig`.</li>
+            <li>من القائمة الجانبية اختر <strong>Firestore Database</strong> ثم <strong>Create Database</strong> في وضع الاختبار (Test Mode).</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- TAB 3: Multi-User Admin Management -->
       <div id="settingsTabUsers" class="hidden space-y-4 text-xs sm:text-sm">
         
         <!-- Add New User Sub-Form -->
@@ -1104,14 +1206,36 @@
     <span id="toastMessage">تم تنفيذ العملية بنجاح</span>
   </div>
 
-  <!-- 5. JAVASCRIPT SYSTEM ENGINE -->
+  <!-- 5. JAVASCRIPT SYSTEM ENGINE (With Firebase Real-Time Synchronization) -->
   <script>
-    const SYSTEM_STORAGE_KEY = 'SMART_FINANCE_MULTI_USER_SYSTEM_V3';
-    const ACTIVE_USER_KEY = 'SMART_FINANCE_ACTIVE_USER';
-    const THEME_STORAGE_KEY = 'SMART_FINANCE_THEME';
-    const CALENDAR_STORAGE_KEY = 'SMART_FINANCE_CALENDAR_MODE';
+    const SYSTEM_STORAGE_KEY = 'SMART_FINANCE_MULTI_USER_SYSTEM_V4';
+    const ACTIVE_USER_KEY = 'SMART_FINANCE_ACTIVE_USER_V4';
+    const THEME_STORAGE_KEY = 'SMART_FINANCE_THEME_V4';
+    const CALENDAR_STORAGE_KEY = 'SMART_FINANCE_CALENDAR_MODE_V4';
+    const FIREBASE_CONFIG_KEY = 'SMART_FINANCE_FIREBASE_CONFIG';
 
+    // Firebase Global Handles
+    let firebaseAppInstance = null;
+    let firestoreDb = null;
+    let unsubscribeFirestoreListener = null;
+
+    // Helper to get real current year-month
+    function getTodayYearMonthKey() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      return `${y}-${m}`;
+    }
+
+    function getTodayMonthName(key) {
+      const [y, m] = key.split('-');
+      const monthNames = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      return `${monthNames[parseInt(m, 10)]} ${y}`;
+    }
+
+    // Clean Production Starter Database
     function getStarterDatabase() {
+      const initialKey = getTodayYearMonthKey();
       return {
         users: {
           'halshuhiyb': {
@@ -1130,81 +1254,10 @@
             salaryAllowance: 0,
             allowanceEffectiveDate: '',
             months: {
-              '2026-06': {
-                name: 'يونيو 2026',
-                extraIncomes: [{ id: 'inc_1', amount: 1500, source: 'حافز أداء استثنائي' }],
-                expenses: [
-                  { id: 'e1', date: '2026-06-01', category: 'ثابت والتزامات', description: 'أقساط والتزامات شهرية', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e2', date: '2026-06-03', category: 'فواتير واشتراكات', description: 'فواتير منزل وإنترنت', amount: 750, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e3', date: '2026-06-07', category: 'معيشة وبقالة', description: 'تموين أسري ومقاضي', amount: 2200, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e4', date: '2026-06-12', category: 'نقل ومحروقات', description: 'وقود وصيانة سيارات', amount: 700, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e5', date: '2026-06-18', category: 'مطاعم وكافيهات', description: 'وجبات عائلية وتوصيل', amount: 950, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e6', date: '2026-06-25', category: 'ادخار واستثمار', description: 'تحويل لصندوق الادخار التراكمي', amount: 4000, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
-                ]
-              },
-              '2026-07': {
-                name: 'يوليو 2026',
-                extraIncomes: [{ id: 'inc_2', amount: 2000, source: 'استشارات حرة' }],
-                expenses: [
-                  { id: 'e7', date: '2026-07-01', category: 'ثابت والتزامات', description: 'أقساط والتزامات شهرية', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e8', date: '2026-07-04', category: 'فواتير واشتراكات', description: 'فواتير خدمات', amount: 820, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e9', date: '2026-07-08', category: 'معيشة وبقالة', description: 'تموين السوبرماركت', amount: 2400, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e10', date: '2026-07-14', category: 'نقل ومحروقات', description: 'وقود شهري', amount: 750, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e11', date: '2026-07-19', category: 'مطاعم وكافيهات', description: 'مناسبات ومطاعم', amount: 1100, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e12', date: '2026-07-22', category: 'ادخار واستثمار', description: 'تحويل لصندوق الادخار', amount: 4000, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
-                ]
-              },
-              '2026-08': {
-                name: 'أغسطس 2026',
+              [initialKey]: {
+                name: `${getTodayMonthName(initialKey)} (الشهر الحالي)`,
                 extraIncomes: [],
-                expenses: [
-                  { id: 'e13', date: '2026-08-01', category: 'ثابت والتزامات', description: 'التزامات شهرية', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e14', date: '2026-08-05', category: 'فواتير واشتراكات', description: 'فواتير دورية', amount: 780, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e15', date: '2026-08-09', category: 'معيشة وبقالة', description: 'مقاضي المنزل', amount: 2350, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e16', date: '2026-08-15', category: 'نقل ومحروقات', description: 'محروقات', amount: 720, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e17', date: '2026-08-20', category: 'مطاعم وكافيهات', description: 'مطاعم', amount: 1050, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e18', date: '2026-08-25', category: 'ادخار واستثمار', description: 'تغذية صندوق الطوارئ والادخار', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
-                ]
-              },
-              '2026-09': {
-                name: 'سبتمبر 2026 (الحالي)',
-                extraIncomes: [{ id: 'inc_3', amount: 800, source: 'استرداد نقدي كاش باك' }],
-                expenses: [
-                  { id: 'e19', date: '2026-09-01', category: 'ثابت والتزامات', description: 'التزامات وأقساط', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e20', date: '2026-09-04', category: 'فواتير واشتراكات', description: 'فواتير كهرباء واتصالات', amount: 800, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e21', date: '2026-09-08', category: 'معيشة وبقالة', description: 'مقاضي استهلاكية وتموين', amount: 2500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e22', date: '2026-09-12', category: 'نقل ومحروقات', description: 'وقود سيارة', amount: 700, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e23', date: '2026-09-16', category: 'مطاعم وكافيهات', description: 'مطاعم وضيافة', amount: 1150, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e24', date: '2026-09-22', category: 'تسوق ورفاهية', description: 'مستلزمات واحتياجات شخصية', amount: 950, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'e25', date: '2026-09-25', category: 'ادخار واستثمار', description: 'تحويل لصندوق الادخار التراكمي', amount: 3500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
-                ]
-              }
-            }
-          },
-          'wife': {
-            role: 'member',
-            credentials: {
-              username: 'wife',
-              password: '123'
-            },
-            profile: {
-              name: 'أم يوسف (الزوجة)',
-              jobTitle: 'معلمة',
-              employer: 'وزارة التعليم',
-              securityKey: '4321'
-            },
-            baseSalary: 8500,
-            salaryAllowance: 500,
-            allowanceEffectiveDate: '2026-08-01',
-            months: {
-              '2026-09': {
-                name: 'سبتمبر 2026 (الحالي)',
-                extraIncomes: [{ id: 'w_inc1', amount: 400, source: 'حوافز نشاط' }],
-                expenses: [
-                  { id: 'w_e1', date: '2026-09-02', category: 'تسوق ورفاهية', description: 'مستلزمات شخصية', amount: 800, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'w_e2', date: '2026-09-06', category: 'معيشة وبقالة', description: 'أغراض خاصة بالمنزل', amount: 650, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
-                  { id: 'w_e3', date: '2026-09-15', category: 'ادخار واستثمار', description: 'ادخار شهري في الصندوق', amount: 2000, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
-                ]
+                expenses: []
               }
             }
           }
@@ -1214,7 +1267,7 @@
 
     let systemDb = loadSystemDatabase();
     let activeUsername = getInitialActiveUsername();
-    let currentMonthKey = '2026-09';
+    let currentMonthKey = getInitialMonthKey();
     let calendarMode = localStorage.getItem(CALENDAR_STORAGE_KEY) || 'gregorian';
     let themeMode = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
 
@@ -1230,45 +1283,204 @@
       return 'halshuhiyb';
     }
 
+    function getInitialMonthKey() {
+      const user = systemDb.users[activeUsername] || Object.values(systemDb.users)[0];
+      if (!user) return getTodayYearMonthKey();
+      const keys = Object.keys(user.months || {}).sort();
+      return keys.length > 0 ? keys[keys.length - 1] : getTodayYearMonthKey();
+    }
+
     function loadSystemDatabase() {
       try {
         const saved = localStorage.getItem(SYSTEM_STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.users && Object.keys(parsed.users).length > 0) {
-            if (parsed.users['admin'] && !parsed.users['halshuhiyb']) {
-              const oldAdmin = parsed.users['admin'];
-              delete parsed.users['admin'];
-              parsed.users['halshuhiyb'] = {
-                ...oldAdmin,
-                role: 'admin',
-                credentials: { username: 'halshuhiyb', password: 'Hh@537573' },
-                profile: {
-                  name: 'حسين يوسف الشهيب',
-                  jobTitle: 'محلل ومصمم نظم',
-                  employer: 'إمارة المنطقة الشرقية',
-                  securityKey: '5375'
-                },
-                baseSalary: 18652.30
-              };
-              localStorage.setItem(SYSTEM_STORAGE_KEY, JSON.stringify(parsed));
-              localStorage.setItem(ACTIVE_USER_KEY, 'halshuhiyb');
-            }
             return parsed;
           }
         }
       } catch (e) {
-        console.warn('Could not read multi-user DB from localStorage', e);
+        console.warn('Could not read DB from localStorage', e);
       }
       return getStarterDatabase();
     }
 
+    // Save to LocalStorage AND sync with Cloud Firestore
     function saveSystemDatabase() {
       try {
         localStorage.setItem(SYSTEM_STORAGE_KEY, JSON.stringify(systemDb));
       } catch (e) {
-        console.error('Failed to save multi-user system state', e);
+        console.error('Failed to save to localStorage', e);
       }
+
+      // Sync to Firebase if configured
+      if (firestoreDb) {
+        updateCloudSyncBadge('syncing');
+        firestoreDb.collection('smart_finance_db').doc('central_store').set(systemDb, { merge: true })
+          .then(() => {
+            updateCloudSyncBadge('synced');
+          })
+          .catch((err) => {
+            console.error('Firestore sync error:', err);
+            updateCloudSyncBadge('error');
+          });
+      }
+    }
+
+    // FIREBASE INITIALIZATION & REALTIME LISTENER
+    function initFirebaseCloudSync() {
+      const configRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
+      if (!configRaw) {
+        updateCloudSyncBadge('offline');
+        return;
+      }
+
+      try {
+        let configObj = null;
+        if (configRaw.trim().startsWith('{')) {
+          configObj = JSON.parse(configRaw);
+        } else {
+          // If user pasted "const firebaseConfig = { ... };"
+          const jsonText = configRaw.substring(configRaw.indexOf('{'), configRaw.lastIndexOf('}') + 1);
+          configObj = (new Function(`return ${jsonText};`))();
+        }
+
+        if (!configObj || !configObj.apiKey || !configObj.projectId) {
+          throw new Error('Invalid Firebase Config structure');
+        }
+
+        if (!firebase.apps.length) {
+          firebaseAppInstance = firebase.initializeApp(configObj);
+        } else {
+          firebaseAppInstance = firebase.app();
+        }
+
+        firestoreDb = firebaseAppInstance.firestore();
+        updateCloudSyncBadge('connecting');
+
+        // Unsubscribe old listener if any
+        if (unsubscribeFirestoreListener) {
+          unsubscribeFirestoreListener();
+        }
+
+        // Realtime Listener
+        unsubscribeFirestoreListener = firestoreDb.collection('smart_finance_db').doc('central_store')
+          .onSnapshot((docSnapshot) => {
+            if (docSnapshot.exists) {
+              const remoteData = docSnapshot.data();
+              if (remoteData && remoteData.users) {
+                systemDb = remoteData;
+                localStorage.setItem(SYSTEM_STORAGE_KEY, JSON.stringify(systemDb));
+                renderApp();
+                updateCloudSyncBadge('synced');
+              }
+            } else {
+              // Document doesn't exist yet, upload current local state to cloud
+              firestoreDb.collection('smart_finance_db').doc('central_store').set(systemDb)
+                .then(() => updateCloudSyncBadge('synced'))
+                .catch(() => updateCloudSyncBadge('error'));
+            }
+          }, (err) => {
+            console.warn('Realtime sync listener error:', err);
+            updateCloudSyncBadge('error');
+          });
+
+      } catch (err) {
+        console.error('Failed to init Firebase:', err);
+        updateCloudSyncBadge('error');
+      }
+    }
+
+    function updateCloudSyncBadge(status) {
+      const badge = document.getElementById('cloudSyncStatusBadge');
+      const dot = document.getElementById('cloudSyncDot');
+      const label = document.getElementById('cloudSyncLabel');
+      const modalBadge = document.getElementById('cloudModalStatusBadge');
+      const adviceBanner = document.getElementById('cloudSetupAdviceBanner');
+
+      if (!badge || !dot || !label) return;
+
+      if (status === 'synced') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block';
+        label.innerText = 'سحابي (متزامن لحظياً ☁️)';
+        label.className = 'font-bold text-[11px] text-emerald-300';
+        badge.className = 'px-2.5 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/20 hover:bg-emerald-950/30 flex items-center gap-1.5 transition';
+        if (modalBadge) {
+          modalBadge.innerText = 'متصل ومتزامن لحظياً 🟢';
+          modalBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold';
+        }
+        if (adviceBanner) adviceBanner.classList.add('hidden');
+      } else if (status === 'syncing' || status === 'connecting') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-sky-400 inline-block animate-pulse-slow';
+        label.innerText = 'جارٍ المزامنة السحابية...';
+        label.className = 'font-bold text-[11px] text-sky-300';
+        badge.className = 'px-2.5 py-1.5 rounded-xl border border-sky-500/40 bg-sky-950/20 flex items-center gap-1.5 transition';
+      } else if (status === 'error') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
+        label.innerText = 'خطأ بالربط السحابي';
+        label.className = 'font-bold text-[11px] text-rose-300';
+        badge.className = 'px-2.5 py-1.5 rounded-xl border border-rose-500/40 bg-rose-950/20 flex items-center gap-1.5 transition';
+        if (modalBadge) {
+          modalBadge.innerText = 'خطأ في المفاتيح أو القواعد ❌';
+          modalBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold';
+        }
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 inline-block';
+        label.innerText = 'تخزين محلي (غير مربوط)';
+        label.className = 'font-bold text-[11px] text-slate-300';
+        badge.className = 'px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 flex items-center gap-1.5 transition';
+        if (modalBadge) {
+          modalBadge.innerText = 'تخزين محلي فقط 🟡';
+          modalBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold';
+        }
+        if (adviceBanner) adviceBanner.classList.remove('hidden');
+      }
+    }
+
+    function handleSaveFirebaseConfig(event) {
+      event.preventDefault();
+      const raw = document.getElementById('firebaseConfigTextarea')?.value.trim();
+      if (!raw) {
+        showToast('يرجى لصق كود الإعدادات الخاص بـ Firebase', 'error');
+        return;
+      }
+
+      try {
+        let testObj = null;
+        if (raw.startsWith('{')) {
+          testObj = JSON.parse(raw);
+        } else {
+          const jsonText = raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
+          testObj = (new Function(`return ${jsonText};`))();
+        }
+
+        if (!testObj || !testObj.apiKey || !testObj.projectId) {
+          throw new Error('Missing apiKey or projectId');
+        }
+
+        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(testObj, null, 2));
+        initFirebaseCloudSync();
+        showToast('تم حفظ إعدادات Firebase وبدء المزامنة السحابية فوراً!', 'success');
+      } catch (e) {
+        showToast('صيغة كود Firebase غير صحيحة، تأكد من نسخه كاملاً', 'error');
+      }
+    }
+
+    function disconnectFirebaseSync() {
+      showCustomConfirm('إلغاء المزامنة السحابية', 'هل ترغب في فصل الربط السحابي والعودة للتخزين المحلي فقط على هذا الجهاز؟', (confirmed) => {
+        if (!confirmed) return;
+        if (unsubscribeFirestoreListener) {
+          unsubscribeFirestoreListener();
+          unsubscribeFirestoreListener = null;
+        }
+        firestoreDb = null;
+        firebaseAppInstance = null;
+        localStorage.removeItem(FIREBASE_CONFIG_KEY);
+        const textarea = document.getElementById('firebaseConfigTextarea');
+        if (textarea) textarea.value = '';
+        updateCloudSyncBadge('offline');
+        showToast('تم إلغاء الربط السحابي والاعتماد على الذاكرة المحلية.', 'info');
+      });
     }
 
     function getActiveUserData() {
@@ -1672,8 +1884,8 @@
         }
       });
 
-      let trendStatus = 'مستقر';
-      let trendMessage = '';
+      let trendStatus = 'مستقر ومثالي';
+      let trendMessage = 'النظام يحلل نمط الصرف باستمرار ويقدم التقديرات الذكية للشهر القادم.';
       if (last3Keys.length >= 2) {
         const prevKey = last3Keys[last3Keys.length - 2];
         const currKey = last3Keys[last3Keys.length - 1];
@@ -1688,12 +1900,7 @@
         } else if (diff < -400 && pct < -5) {
           trendStatus = 'تنازلي موفّر';
           trendMessage = `أداء ممتاز! استطعت خفض مصروفاتك بنسبة ${Math.abs(pct)}%، مما يتيح لك فائضاً أكبر لدعم صندوق الادخار وسداد الالتزامات.`;
-        } else {
-          trendStatus = 'مستقر ومثالي';
-          trendMessage = `سلوكك المالي متزن للغاية، والصرف يسير وفق التقديرات الموزونة الآمنة.`;
         }
-      } else {
-        trendMessage = 'يجري بناء المؤشرات التراكمية؛ يرجى مواصلة تسجيل العمليات لرفع دقة الذكاء المالي.';
       }
 
       return {
@@ -1710,7 +1917,7 @@
       const user = getActiveUserData();
       if (!user.months[currentMonthKey]) {
         user.months[currentMonthKey] = {
-          name: currentMonthKey,
+          name: getTodayMonthName(currentMonthKey),
           extraIncomes: [],
           expenses: []
         };
@@ -1831,7 +2038,7 @@
       }
 
       const predBasis = document.getElementById('predictionBasis');
-      if (predBasis) predBasis.innerText = `مبني على تحليل ${forecast.analyzedMonthsCount} شهور سابقة`;
+      if (predBasis) predBasis.innerText = `مبني على تحليل ${forecast.analyzedMonthsCount} شهور مسجلة`;
 
       renderMonthDropdown();
       updateCalendarBtnUI();
@@ -1858,6 +2065,33 @@
         }
         select.appendChild(option);
       });
+    }
+
+    function openAddNewMonthPrompt() {
+      const now = new Date();
+      const defaultNext = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}`;
+      const input = prompt('أدخل رمز الشهر الجديد بصيغة (YYYY-MM)، مثال: 2026-10', defaultNext);
+      if (!input || !/^\d{4}-\d{2}$/.test(input.trim())) {
+        if (input) showToast('صيغة التاريخ غير صحيحة، يرجى الالتزام بصيغة YYYY-MM', 'error');
+        return;
+      }
+
+      const key = input.trim();
+      const user = getActiveUserData();
+      if (!user.months[key]) {
+        user.months[key] = {
+          name: getTodayMonthName(key),
+          extraIncomes: [],
+          expenses: []
+        };
+        saveSystemDatabase();
+        currentMonthKey = key;
+        renderApp();
+        showToast(`تم إنشاء وتفعيل شهر (${user.months[key].name}) بنجاح!`, 'success');
+      } else {
+        currentMonthKey = key;
+        renderApp();
+      }
     }
 
     function changeSelectedMonth(newMonthKey) {
@@ -2319,7 +2553,7 @@
       const user = getActiveUserData();
 
       if (!user.months[currentMonthKey]) {
-        user.months[currentMonthKey] = { name: currentMonthKey, extraIncomes: [], expenses: [] };
+        user.months[currentMonthKey] = { name: getTodayMonthName(currentMonthKey), extraIncomes: [], expenses: [] };
       }
 
       if (currentEditingExpenseId) {
@@ -2443,7 +2677,7 @@
 
       const user = getActiveUserData();
       if (!user.months[currentMonthKey]) {
-        user.months[currentMonthKey] = { name: currentMonthKey, extraIncomes: [], expenses: [] };
+        user.months[currentMonthKey] = { name: getTodayMonthName(currentMonthKey), extraIncomes: [], expenses: [] };
       }
 
       user.months[currentMonthKey].extraIncomes.push(newIncome);
@@ -2456,26 +2690,35 @@
 
     function switchSettingsTab(tab) {
       const tabBtnProfile = document.getElementById('tabBtnProfile');
+      const tabBtnCloudSync = document.getElementById('tabBtnCloudSync');
       const tabBtnAdminUsers = document.getElementById('tabBtnAdminUsers');
+
       const tabProfile = document.getElementById('settingsTabProfile');
+      const tabCloud = document.getElementById('settingsTabCloud');
       const tabUsers = document.getElementById('settingsTabUsers');
 
       if (tabBtnProfile) {
         tabBtnProfile.className = tab === 'profile' 
-          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5' 
-          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5';
+          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5 whitespace-nowrap' 
+          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 whitespace-nowrap';
+      }
+      if (tabBtnCloudSync) {
+        tabBtnCloudSync.className = tab === 'cloud' 
+          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5 whitespace-nowrap' 
+          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 whitespace-nowrap';
       }
       if (tabBtnAdminUsers) {
         tabBtnAdminUsers.className = tab === 'users' 
-          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5' 
-          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5';
+          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5 whitespace-nowrap' 
+          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5 whitespace-nowrap';
       }
 
       if (tabProfile) tabProfile.classList.toggle('hidden', tab !== 'profile');
+      if (tabCloud) tabCloud.classList.toggle('hidden', tab !== 'cloud');
       if (tabUsers) tabUsers.classList.toggle('hidden', tab !== 'users');
     }
 
-    function openSettingsModal() {
+    function openSettingsModal(defaultTab = 'profile') {
       const user = getActiveUserData();
 
       const nameEl = document.getElementById('settingUserName');
@@ -2498,7 +2741,13 @@
       if (passEl) passEl.value = '';
       if (passConfEl) passConfEl.value = '';
 
-      switchSettingsTab('profile');
+      const fbTextarea = document.getElementById('firebaseConfigTextarea');
+      const savedConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
+      if (fbTextarea && savedConfig) {
+        fbTextarea.value = savedConfig;
+      }
+
+      switchSettingsTab(defaultTab);
       openModal('settingsModal');
     }
 
@@ -2598,7 +2847,7 @@
         return;
       }
 
-      const currentYearMonth = currentMonthKey || '2026-09';
+      const currentYearMonth = currentMonthKey || getTodayYearMonthKey();
       systemDb.users[uname] = {
         role: 'member',
         credentials: { username: uname, password: pwd },
@@ -2608,7 +2857,7 @@
         allowanceEffectiveDate: '',
         months: {
           [currentYearMonth]: {
-            name: `شهر ${currentYearMonth}`,
+            name: getTodayMonthName(currentYearMonth),
             extraIncomes: [],
             expenses: []
           }
@@ -2736,9 +2985,7 @@
         y += 1;
       }
       const nextMonthKey = `${y}-${String(m).padStart(2, '0')}`;
-
-      const monthNamesAr = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-      const nextMonthName = `${monthNamesAr[m]} ${y}`;
+      const nextMonthName = getTodayMonthName(nextMonthKey);
 
       if (!user.months[nextMonthKey]) {
         user.months[nextMonthKey] = {
@@ -2825,10 +3072,10 @@
           exportDataJson();
 
           const user = getActiveUserData();
-          const currentYearMonth = currentMonthKey || '2026-09';
+          const currentYearMonth = getTodayYearMonthKey();
           user.months = {
             [currentYearMonth]: {
-              name: `شهر ${currentYearMonth}`,
+              name: `${getTodayMonthName(currentYearMonth)} (الشهر الحالي)`,
               extraIncomes: [],
               expenses: []
             }
@@ -2894,6 +3141,7 @@
     window.onload = function() {
       initTheme();
       checkAuthOnLoad();
+      initFirebaseCloudSync();
       renderApp();
     };
   </script>
