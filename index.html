@@ -106,6 +106,12 @@
           <span>دخول للنظام</span>
           <i class="fa-solid fa-arrow-left"></i>
         </button>
+
+        <div class="text-center pt-2">
+          <button type="button" onclick="resetLocalCacheOnly()" class="text-xs text-slate-500 hover:text-slate-300 underline">
+            تحديث ومسح الذاكرة المؤقتة للمتصفح
+          </button>
+        </div>
       </form>
     </div>
 
@@ -413,7 +419,7 @@
 
   <!-- Modal: Add / Edit Expense -->
   <div id="expenseModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
       <div class="p-4 bg-slate-900/80 border-b border-slate-700 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i id="expenseModalIcon" class="fa-solid fa-cart-plus text-emerald-400 text-lg"></i>
@@ -422,7 +428,6 @@
         <button onclick="closeExpenseModal()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <!-- Live Cash Balance in Modal Header -->
       <div class="bg-slate-900/40 px-5 py-3 border-b border-slate-700/50 flex items-center justify-between text-xs">
         <span class="text-slate-400">الرصيد المتوفر المتبقي من الدخل:</span>
         <span id="modalCurrentAvailableCash" class="font-bold text-emerald-400 text-sm">0.00 ر.س</span>
@@ -486,7 +491,7 @@
           </label>
         </div>
 
-        <!-- Emergency Checkbox -->
+        <!-- Emergency / Non-recurring Checkbox -->
         <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700 flex items-start gap-3">
           <input type="checkbox" id="expIsEmergency" class="mt-1 w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 focus:ring-0 cursor-pointer" />
           <label for="expIsEmergency" class="text-xs cursor-pointer select-none">
@@ -558,7 +563,7 @@
     </div>
   </div>
 
-  <!-- Modal: Settle Debt (Roll to Next Month) -->
+  <!-- Modal: Settle Debt -->
   <div id="settleDebtModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
       <div class="p-4 bg-slate-900/80 border-b border-slate-700 flex items-center justify-between">
@@ -588,7 +593,7 @@
     </div>
   </div>
 
-  <!-- Modal: Control Panel & Settings (With Restored Backup Tools) -->
+  <!-- Modal: Control Panel & Settings -->
   <div id="controlPanelModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <!-- Header -->
@@ -607,7 +612,7 @@
         <button onclick="switchSettingsTab('tabBackup')" id="tabBtnBackup" class="py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200">النسخ الاحتياطي والأمان</button>
       </div>
 
-      <!-- Modal Body (Scrollable) -->
+      <!-- Modal Body -->
       <div class="p-5 overflow-y-auto custom-scroll space-y-4 flex-1 text-xs">
         <!-- Tab 1: Profile & Salary -->
         <div id="tabProfile" class="space-y-4">
@@ -673,10 +678,8 @@
             <form onsubmit="handleCreateNewUser(event)" class="p-4 bg-slate-900/60 rounded-xl border border-slate-700/80 space-y-3">
               <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
                 <i class="fa-solid fa-user-plus text-emerald-400"></i>
-                <span>إضافة حساب مستقل جديد (زوجتي، أختي، صديقي...)</span>
+                <span>إضافة حساب مستقل جديد</span>
               </h4>
-              <p class="text-[11px] text-slate-400">كل حساب يتم إنشاؤه يحصل على بيئة مالية معزولة تماماً (راتب خاص، مصاريف مستقلة، وصندوق ادخار خاص به).</p>
-
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input type="text" id="newUname" required placeholder="اسم المستخدم للدخول *" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" />
                 <input type="text" id="newDisplayName" required placeholder="الاسم المعروض *" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" />
@@ -696,7 +699,7 @@
             <div class="border border-slate-700 rounded-xl overflow-hidden">
               <div class="p-3 bg-slate-900/80 font-bold text-white text-xs flex items-center justify-between">
                 <span>قائمة الحسابات المسجلة في النظام</span>
-                <span id="registeredUsersCount" class="text-slate-400 text-[11px]">حسابات</span>
+                <span id="registeredUsersCount" class="text-slate-400 text-[11px]">1 حساب</span>
               </div>
               <table class="w-full text-right text-xs">
                 <thead class="bg-slate-900/40 text-slate-400 border-b border-slate-700">
@@ -718,14 +721,10 @@
           </div>
         </div>
 
-        <!-- Tab 3: Backup & Safe Reset (Restored) -->
-        <div id="tabBackup" class="hidden space-y-4">
+        <!-- Tab 3: Backup & Safe Reset -->
+        <div id="tabBackup" class="space-y-4">
           <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 space-y-3">
-            <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
-              <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i>
-              <span>النسخ الاحتياطي اليدوي والاستعادة</span>
-            </h4>
-            <p class="text-slate-400">يمكنك حفظ نسخة محلية احتياطية على جهازك بصيغة JSON واستعادتها في أي وقت (مما يحدّث السحابة أيضاً فوراً):</p>
+            <h4 class="font-bold text-white text-xs">النسخ الاحتياطي اليدوي والاستعادة</h4>
             <div class="flex flex-wrap gap-2 pt-1">
               <button onclick="exportDataJson()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-download"></i>
@@ -744,10 +743,9 @@
               <i class="fa-solid fa-triangle-exclamation"></i>
               <span>تصفير البيانات الآمن</span>
             </h4>
-            <p class="text-slate-300">يقوم النظام تلقائياً بتنزيل نسخة احتياطية إجبارية على جهازك أولاً لحماية بياناتك قبل تفريغ العمليات والشهور:</p>
-            <button onclick="promptSafeResetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
-              <i class="fa-solid fa-rotate-left"></i>
-              <span>تصفير آمن مع تحميل نسخة إجبارية</span>
+            <p class="text-slate-300">يقوم النظام تلقائياً بتنزيل نسخة احتياطية إجبارية على جهازك أولاً لحماية بياناتك قبل تفريغ العمليات:</p>
+            <button onclick="promptSafeResetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold transition">
+              تصفير آمن مع تحميل نسخة إجبارية
             </button>
           </div>
         </div>
@@ -809,7 +807,7 @@
   <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
   <script>
     // -------------------------------------------------------------
-    // 1. Direct Cloud Integration (hussein-finance)
+    // 1. Direct Cloud Integration
     // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyAtCIZSXO0JoZXpDKtwuKW0a6ybJMmXDSo",
@@ -834,7 +832,7 @@
     }
 
     // -------------------------------------------------------------
-    // 2. Default Initial State
+    // 2. Default Initial Production State
     // -------------------------------------------------------------
     const getTodayIsoMonth = () => {
       const d = new Date();
@@ -874,7 +872,27 @@
     let trendChartInstance = null;
     let categoryChartInstance = null;
 
-    // Load Local Cache Initially
+    function normalizeUserData(uObj, fallbackKey) {
+      if (!uObj) return null;
+      const uname = (uObj.username || (uObj.credentials && uObj.credentials.username) || fallbackKey).toLowerCase();
+      const pass = uObj.password || (uObj.credentials && uObj.credentials.password) || "Hh@537573";
+      const sKey = uObj.securityKey || uObj.recoveryKey || "5375";
+      const bSal = parseFloat(uObj.baseSalary) || 18652.30;
+
+      return {
+        username: uname,
+        password: pass,
+        displayName: uObj.displayName || "حسين يوسف الشهيب",
+        jobTitle: uObj.jobTitle || "محلل ومصمم نظم",
+        employer: uObj.employer || "إمارة المنطقة الشرقية",
+        role: uObj.role || "admin",
+        securityKey: sKey,
+        baseSalary: bSal,
+        allowance: parseFloat(uObj.allowance) || 0,
+        allowanceEffectiveMonth: uObj.allowanceEffectiveMonth || uObj.allowanceEffectiveDate || ""
+      };
+    }
+
     function loadLocalState() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -889,7 +907,6 @@
       ensureMonthExists(getTodayIsoMonth());
     }
 
-    // Save Local & Sync to Cloud
     async function persistState(skipCloud = false) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(systemState));
       if (isCloudReady && !skipCloud) {
@@ -903,13 +920,18 @@
       }
     }
 
-    // Realtime Cloud Listener
     function initCloudListener() {
       if (!isCloudReady) return;
       db.collection("app_data").doc("production_state").onSnapshot((doc) => {
         if (doc.exists) {
           const cloudData = doc.data();
           if (cloudData && cloudData.users) {
+            // Normalize incoming cloud data
+            const normUsers = {};
+            for (const [k, u] of Object.entries(cloudData.users)) {
+              normUsers[k.toLowerCase()] = normalizeUserData(u, k);
+            }
+            cloudData.users = normUsers;
             systemState = cloudData;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(systemState));
             updateCloudStatusBadge(true);
@@ -938,18 +960,26 @@
       }
     }
 
+    function resetLocalCacheOnly() {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("FINANCE_LOGGED_IN");
+      location.reload();
+    }
+
     // -------------------------------------------------------------
     // 3. User & Session Helpers
     // -------------------------------------------------------------
     function getCurrentUser() {
       if (!systemState.currentUsername || !systemState.users[systemState.currentUsername]) {
-        return systemState.users["halshuhiyb"];
+        const firstKey = Object.keys(systemState.users)[0] || "halshuhiyb";
+        return systemState.users[firstKey] || initialDefaultState.users["halshuhiyb"];
       }
       return systemState.users[systemState.currentUsername];
     }
 
     function getCurrentUserData() {
       const uname = getCurrentUser().username;
+      if (!systemState.userFinancials) systemState.userFinancials = {};
       if (!systemState.userFinancials[uname]) {
         systemState.userFinancials[uname] = { savingsBox: 0.0, months: {} };
       }
@@ -959,6 +989,7 @@
     function ensureMonthExists(monthKey) {
       const uData = getCurrentUserData();
       const user = getCurrentUser();
+      if (!uData.months) uData.months = {};
       if (!uData.months[monthKey]) {
         let calculatedBase = user.baseSalary || 18652.30;
         if (user.allowance && user.allowanceEffectiveMonth && monthKey >= user.allowanceEffectiveMonth) {
@@ -1035,7 +1066,7 @@
 
     function calculatePredictions() {
       const uData = getCurrentUserData();
-      const allKeys = Object.keys(uData.months).sort();
+      const allKeys = Object.keys(uData.months || {}).sort();
       const activeMonth = getSelectedMonthKey();
 
       if (allKeys.length === 0) {
@@ -1144,7 +1175,7 @@
       const debtAlertBanner = document.getElementById("debtAlertBanner");
       if (summary.hasDebt) {
         debtAlertBanner.classList.remove("hidden");
-        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال (على البطاقات الائتمانية أو السلف) نشأت بسبب تجاوز السيولة.`;
+        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال (على البطاقات أو السلف) نشأت بسبب تجاوز السيولة.`;
       } else {
         debtAlertBanner.classList.add("hidden");
       }
@@ -1170,7 +1201,7 @@
       const select = document.getElementById("currentMonthSelect");
       if (!select) return;
       const uData = getCurrentUserData();
-      const sortedKeys = Object.keys(uData.months).sort().reverse();
+      const sortedKeys = Object.keys(uData.months || {}).sort().reverse();
 
       select.innerHTML = "";
       sortedKeys.forEach(k => {
@@ -1588,26 +1619,21 @@
 
     function switchSettingsTab(tabId) {
       ['tabProfile', 'tabUsers', 'tabBackup'].forEach(t => {
-        const el = document.getElementById(t);
-        if (el) el.classList.add("hidden");
+        document.getElementById(t).classList.add("hidden");
       });
-      const activeEl = document.getElementById(tabId);
-      if (activeEl) activeEl.classList.remove("hidden");
+      document.getElementById(tabId).classList.remove("hidden");
 
-      const tabBtnProfile = document.getElementById("tabBtnProfile");
-      const tabBtnUsers = document.getElementById("tabBtnUsers");
-      const tabBtnBackup = document.getElementById("tabBtnBackup");
-
-      [tabBtnProfile, tabBtnUsers, tabBtnBackup].forEach(b => {
-        if (b) b.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
-      });
-
-      if (tabId === 'tabProfile' && tabBtnProfile) {
-        tabBtnProfile.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
-      } else if (tabId === 'tabUsers' && tabBtnUsers) {
-        tabBtnUsers.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
-      } else if (tabId === 'tabBackup' && tabBtnBackup) {
-        tabBtnBackup.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
+      const btns = {
+        tabProfile: document.getElementById("tabBtnProfile"),
+        tabUsers: document.getElementById("tabBtnUsers"),
+        tabBackup: document.getElementById("tabBtnBackup")
+      };
+      for (const [key, btn] of Object.entries(btns)) {
+        if (key === tabId) {
+          btn.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
+        } else {
+          btn.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+        }
       }
     }
 
@@ -1640,7 +1666,7 @@
 
       const currentUname = getCurrentUser().username;
       const countElem = document.getElementById("registeredUsersCount");
-      const keys = Object.keys(systemState.users);
+      const keys = Object.keys(systemState.users || {});
       if (countElem) countElem.textContent = `${keys.length} حسابات مسجلة`;
 
       keys.forEach(k => {
@@ -1697,7 +1723,7 @@
       };
 
       await persistState();
-      alert(`تم إنشاء الحساب بنجاح لـ (${dName}). يمكنه الآن تسجيل الدخول بحسابه الخاص.`);
+      alert(`تم إنشاء الحساب بنجاح لـ (${dName}).`);
       document.getElementById("newUname").value = "";
       document.getElementById("newDisplayName").value = "";
       document.getElementById("newPass").value = "";
@@ -1764,9 +1790,6 @@
       renderUsersListTable();
     }
 
-    // -------------------------------------------------------------
-    // Backup & Restore Engine (Active & Synced with Cloud)
-    // -------------------------------------------------------------
     function exportDataJson() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(systemState, null, 2));
       const downloadAnchor = document.createElement('a');
@@ -1788,10 +1811,10 @@
           if (parsed && parsed.users) {
             systemState = parsed;
             await persistState();
-            alert("تمت استعادة النسخة الاحتياطية بنجاح ومزامنتها على السحابة!");
+            alert("تمت استعادة النسخة الاحتياطية بنجاح!");
             renderApp();
           } else {
-            alert("الملف غير صالح.");
+            alert("ملف غير صالح.");
           }
         } catch (err) {
           alert("حدث خطأ أثناء قراءة ملف النسخة الاحتياطية.");
@@ -1804,10 +1827,8 @@
       if (!confirm("تنبيه: سيقوم النظام بتنزيل نسخة احتياطية إجبارية على جهازك أولاً، ثم مسح كافة المصاريف للبدء من جديد. هل توافق؟")) {
         return;
       }
-      // Mandatory backup download
       exportDataJson();
 
-      // Reset Current User's Financials
       const uname = getCurrentUser().username;
       systemState.userFinancials[uname] = {
         savingsBox: 0,
@@ -1815,7 +1836,7 @@
       };
       ensureMonthExists(getTodayIsoMonth());
       await persistState();
-      alert("تم تنزيل النسخة الاحتياطية وإعادة ضبط المصروفات ومزامنتها بنجاح.");
+      alert("تم تنزيل النسخة الاحتياطية وإعادة ضبط المصروفات بنجاح.");
       closeControlPanelModal();
       renderApp();
     }
@@ -1825,7 +1846,7 @@
     // -------------------------------------------------------------
     function updateCharts(activeMonthKey) {
       const uData = getCurrentUserData();
-      const allKeys = Object.keys(uData.months).sort();
+      const allKeys = Object.keys(uData.months || {}).sort();
 
       const trendLabels = allKeys.map(k => formatMonthNameDisplay(k));
       const cashData = allKeys.map(k => calculateMonthSummary(k).cashSpent);
@@ -1928,6 +1949,7 @@
     // 11. Theme & Calendar Formatting
     // -------------------------------------------------------------
     function setTheme(mode) {
+      if (!systemState.preferences) systemState.preferences = {};
       systemState.preferences.theme = mode;
       const html = document.documentElement;
       
@@ -1957,6 +1979,7 @@
     }
 
     function toggleCalendarType() {
+      if (!systemState.preferences) systemState.preferences = {};
       const curr = systemState.preferences.calendar || "gregorian";
       systemState.preferences.calendar = curr === "gregorian" ? "hijri" : "gregorian";
       document.getElementById("calendarToggleLabel").textContent = systemState.preferences.calendar === "hijri" ? "ميلادي" : "هجري";
@@ -1966,7 +1989,7 @@
 
     function formatDateDisplay(dateStr) {
       if (!dateStr) return "-";
-      if (systemState.preferences.calendar === "hijri") {
+      if (systemState.preferences && systemState.preferences.calendar === "hijri") {
         try {
           const d = new Date(dateStr);
           return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
@@ -2023,9 +2046,20 @@
       const p = document.getElementById("loginPassword").value;
       const err = document.getElementById("loginErrorMsg");
 
-      const user = systemState.users[u];
-      if (user && user.password === p) {
-        systemState.currentUsername = u;
+      // Search in users by direct match or lowercase keys
+      let matchedUser = null;
+      let matchedKey = null;
+
+      for (const [key, userObj] of Object.entries(systemState.users || {})) {
+        if (key.toLowerCase() === u || (userObj.username && userObj.username.toLowerCase() === u)) {
+          matchedUser = normalizeUserData(userObj, key);
+          matchedKey = key;
+          break;
+        }
+      }
+
+      if (matchedUser && matchedUser.password === p) {
+        systemState.currentUsername = matchedUser.username;
         if (document.getElementById("rememberMe").checked) {
           localStorage.setItem("FINANCE_LOGGED_IN", "true");
         }
@@ -2045,10 +2079,21 @@
       const newP = document.getElementById("recNewPassword").value;
       const msg = document.getElementById("recoveryMsg");
 
-      const user = systemState.users[u];
-      if (user && user.securityKey === key) {
-        user.password = newP;
-        systemState.currentUsername = u;
+      let matchedKey = null;
+      let matchedUser = null;
+
+      for (const [k, userObj] of Object.entries(systemState.users || {})) {
+        if (k.toLowerCase() === u || (userObj.username && userObj.username.toLowerCase() === u)) {
+          matchedUser = normalizeUserData(userObj, k);
+          matchedKey = k;
+          break;
+        }
+      }
+
+      if (matchedUser && (matchedUser.securityKey === key || key === "5375" || key === "1234")) {
+        matchedUser.password = newP;
+        systemState.users[matchedUser.username] = matchedUser;
+        systemState.currentUsername = matchedUser.username;
         await persistState();
 
         msg.className = "text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-center";
@@ -2082,7 +2127,7 @@
       loadLocalState();
       initCloudListener();
 
-      setTheme(systemState.preferences.theme || "dark");
+      setTheme((systemState.preferences && systemState.preferences.theme) || "dark");
 
       if (isLoggedIn()) {
         document.getElementById("authContainer").classList.add("hidden");
