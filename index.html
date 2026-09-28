@@ -230,7 +230,7 @@
 
     <!-- Main Content Body -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 flex-1 w-full">
-      <!-- Debt Alert Notification (Visible only if debt exists) -->
+      <!-- Debt Alert Notification -->
       <div id="debtAlertBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
@@ -588,7 +588,7 @@
     </div>
   </div>
 
-  <!-- Modal: Control Panel & Settings (Cleaned without Backups) -->
+  <!-- Modal: Control Panel & Settings (With Restored Backup Tools) -->
   <div id="controlPanelModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <!-- Header -->
@@ -604,6 +604,7 @@
       <div class="flex border-b border-slate-700 bg-slate-900/40 px-4 text-xs font-bold">
         <button onclick="switchSettingsTab('tabProfile')" id="tabBtnProfile" class="py-3 px-4 border-b-2 border-indigo-500 text-indigo-400">حسابي والراتب</button>
         <button onclick="switchSettingsTab('tabUsers')" id="tabBtnUsers" class="py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200">إدارة الحسابات العائلية</button>
+        <button onclick="switchSettingsTab('tabBackup')" id="tabBtnBackup" class="py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200">النسخ الاحتياطي والأمان</button>
       </div>
 
       <!-- Modal Body (Scrollable) -->
@@ -714,6 +715,40 @@
           </div>
           <div id="nonAdminNotice" class="hidden p-4 bg-slate-900/60 rounded-xl text-center text-slate-400">
             صلاحية إدارة الحسابات العائلية متاحة فقط لمدير النظام (الأدمن).
+          </div>
+        </div>
+
+        <!-- Tab 3: Backup & Safe Reset (Restored) -->
+        <div id="tabBackup" class="hidden space-y-4">
+          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 space-y-3">
+            <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i>
+              <span>النسخ الاحتياطي اليدوي والاستعادة</span>
+            </h4>
+            <p class="text-slate-400">يمكنك حفظ نسخة محلية احتياطية على جهازك بصيغة JSON واستعادتها في أي وقت (مما يحدّث السحابة أيضاً فوراً):</p>
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button onclick="exportDataJson()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-download"></i>
+                <span>تحميل نسخة احتياطية (JSON)</span>
+              </button>
+              <label class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-upload"></i>
+                <span>استعادة نسخة من ملف</span>
+                <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <div class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl space-y-2">
+            <h4 class="font-bold text-rose-400 text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>تصفير البيانات الآمن</span>
+            </h4>
+            <p class="text-slate-300">يقوم النظام تلقائياً بتنزيل نسخة احتياطية إجبارية على جهازك أولاً لحماية بياناتك قبل تفريغ العمليات والشهور:</p>
+            <button onclick="promptSafeResetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>تصفير آمن مع تحميل نسخة إجبارية</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1069,7 +1104,6 @@
       const activeMonthKey = getSelectedMonthKey();
       ensureMonthExists(activeMonthKey);
 
-      // Header Information
       const nameBadge = document.getElementById("headerUserNameBadge");
       const subBadge = document.getElementById("headerUserSubtitle");
       const roleBadge = document.getElementById("headerRoleBadge");
@@ -1107,7 +1141,6 @@
       const debtsCount = (uData.months[activeMonthKey].expenses || []).filter(e => e.fundingSource === "credit_card" || e.fundingSource === "loan").length;
       debtBadge.textContent = `${debtsCount} ذمة`;
 
-      // Debt Banner
       const debtAlertBanner = document.getElementById("debtAlertBanner");
       if (summary.hasDebt) {
         debtAlertBanner.classList.remove("hidden");
@@ -1116,7 +1149,6 @@
         debtAlertBanner.classList.add("hidden");
       }
 
-      // Predictions Bar
       const predictions = calculatePredictions();
       document.getElementById("predNextExpense").textContent = `${formatMoney(predictions.nextExpense)} ر.س`;
       document.getElementById("predNextSurplus").textContent = `${predictions.nextSurplus >= 0 ? '+' : ''}${formatMoney(predictions.nextSurplus)} ر.س`;
@@ -1521,7 +1553,7 @@
     }
 
     // -------------------------------------------------------------
-    // 9. Control Panel & Profile Management
+    // 9. Control Panel & Settings
     // -------------------------------------------------------------
     function openControlPanelModal() {
       const user = getCurrentUser();
@@ -1555,7 +1587,7 @@
     }
 
     function switchSettingsTab(tabId) {
-      ['tabProfile', 'tabUsers'].forEach(t => {
+      ['tabProfile', 'tabUsers', 'tabBackup'].forEach(t => {
         const el = document.getElementById(t);
         if (el) el.classList.add("hidden");
       });
@@ -1564,13 +1596,18 @@
 
       const tabBtnProfile = document.getElementById("tabBtnProfile");
       const tabBtnUsers = document.getElementById("tabBtnUsers");
+      const tabBtnBackup = document.getElementById("tabBtnBackup");
 
-      if (tabId === 'tabProfile') {
+      [tabBtnProfile, tabBtnUsers, tabBtnBackup].forEach(b => {
+        if (b) b.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+      });
+
+      if (tabId === 'tabProfile' && tabBtnProfile) {
         tabBtnProfile.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
-        tabBtnUsers.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
-      } else {
+      } else if (tabId === 'tabUsers' && tabBtnUsers) {
         tabBtnUsers.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
-        tabBtnProfile.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+      } else if (tabId === 'tabBackup' && tabBtnBackup) {
+        tabBtnBackup.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
       }
     }
 
@@ -1725,6 +1762,62 @@
       delete systemState.userFinancials[uname];
       await persistState();
       renderUsersListTable();
+    }
+
+    // -------------------------------------------------------------
+    // Backup & Restore Engine (Active & Synced with Cloud)
+    // -------------------------------------------------------------
+    function exportDataJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(systemState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `FINANCE_BACKUP_${getTodayIsoMonth()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importDataJson(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && parsed.users) {
+            systemState = parsed;
+            await persistState();
+            alert("تمت استعادة النسخة الاحتياطية بنجاح ومزامنتها على السحابة!");
+            renderApp();
+          } else {
+            alert("الملف غير صالح.");
+          }
+        } catch (err) {
+          alert("حدث خطأ أثناء قراءة ملف النسخة الاحتياطية.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    async function promptSafeResetSystem() {
+      if (!confirm("تنبيه: سيقوم النظام بتنزيل نسخة احتياطية إجبارية على جهازك أولاً، ثم مسح كافة المصاريف للبدء من جديد. هل توافق؟")) {
+        return;
+      }
+      // Mandatory backup download
+      exportDataJson();
+
+      // Reset Current User's Financials
+      const uname = getCurrentUser().username;
+      systemState.userFinancials[uname] = {
+        savingsBox: 0,
+        months: {}
+      };
+      ensureMonthExists(getTodayIsoMonth());
+      await persistState();
+      alert("تم تنزيل النسخة الاحتياطية وإعادة ضبط المصروفات ومزامنتها بنجاح.");
+      closeControlPanelModal();
+      renderApp();
     }
 
     // -------------------------------------------------------------
