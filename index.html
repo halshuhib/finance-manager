@@ -1,0 +1,2901 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة المصروفات العائلي والادخار والتنبؤ المالي الذكي</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            dark: {
+              base: '#0a0e17',
+              card: '#131b2a',
+              border: '#1e293b',
+              input: '#0c1322'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .glass-card {
+      backdrop-filter: blur(14px);
+    }
+    .dark .glass-card {
+      background: rgba(19, 27, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+    }
+    html:not(.dark) .glass-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      color: #0f172a;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+    }
+    select option {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      font-weight: 600;
+      padding: 8px 12px;
+    }
+    html:not(.dark) select option {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .dark ::-webkit-scrollbar-track { background: #0a0e17; }
+    .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    html:not(.dark) ::-webkit-scrollbar-track { background: #f1f5f9; }
+    html:not(.dark) ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-brand-500 selection:text-white transition-colors duration-300">
+
+  <!-- 1. AUTHENTICATION & PASSWORD RECOVERY SCREEN -->
+  <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md">
+    <div class="glass-card max-w-md w-full p-8 rounded-3xl shadow-2xl relative border border-slate-700/60 overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-40 h-40 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Login View -->
+      <div id="loginViewContainer">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white text-2xl shadow-lg shadow-brand-500/30">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+          <h2 class="text-2xl font-black text-white mb-1">تسجيل الدخول للنظام المالي</h2>
+          <p class="text-xs text-slate-400">نظام عائلي مستقل لإدارة المصاريف والمدخرات والتنبؤ المالي</p>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">اسم المستخدم</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute right-3.5 top-3.5 text-slate-500 text-sm"></i>
+              <input type="text" id="loginUsername" required autocomplete="username" class="w-full bg-slate-900 border border-slate-700 rounded-xl pr-10 pl-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">كلمة المرور</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute right-3.5 top-3.5 text-slate-500 text-sm"></i>
+              <input type="password" id="loginPassword" required autocomplete="current-password" class="w-full bg-slate-900 border border-slate-700 rounded-xl pr-10 pl-10 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 transition">
+              <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute left-3 top-3 text-slate-400 hover:text-white p-0.5" title="إظهار/إخفاء كلمة المرور">
+                <i class="fa-solid fa-eye" id="loginEyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="rememberMeCheck" checked class="rounded accent-brand-500 w-4 h-4">
+              <span>تذكرني على هذا الجهاز</span>
+            </label>
+            <button type="button" onclick="toggleRecoveryView(true)" class="text-xs text-brand-400 hover:text-brand-300 underline font-semibold">
+              نسيت كلمة المرور؟
+            </button>
+          </div>
+
+          <div id="loginErrorMsg" class="hidden text-xs text-rose-400 text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-xl">
+            اسم المستخدم أو كلمة المرور غير صحيحة.
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-emerald-500 hover:from-brand-500 hover:to-emerald-400 text-white font-bold text-sm shadow-lg shadow-brand-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+            <span>دخول النظام</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- Password Recovery View -->
+      <div id="recoveryViewContainer" class="hidden">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl shadow-lg border border-amber-500/30">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <h2 class="text-xl font-black text-white mb-1">استعادة كلمة المرور</h2>
+          <p class="text-xs text-slate-400">أدخل اسم المستخدم المسجل في النظام ورمز الاسترداد السري</p>
+        </div>
+
+        <form id="recoveryForm" onsubmit="handlePasswordRecovery(event)" class="space-y-3.5 text-xs sm:text-sm">
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">اسم المستخدم</label>
+            <input type="text" id="recoveryUserOrEmail" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">رمز الاسترداد الأمني (الرمز السري المسجل في حسابك)</label>
+            <input type="text" id="recoverySecurityKey" required placeholder="الرمز السري المسجل في لوحة التحكم" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+          </div>
+
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">كلمة المرور الجديدة</label>
+            <div class="relative">
+              <input type="password" id="recoveryNewPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl pr-3 pl-10 py-2 text-white">
+              <button type="button" onclick="togglePasswordVisibility('recoveryNewPassword', 'recEyeIcon')" class="absolute left-3 top-2.5 text-slate-400 hover:text-white p-0.5">
+                <i class="fa-solid fa-eye" id="recEyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="recoveryErrorMsg" class="hidden text-xs text-rose-400 text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-xl">
+            البيانات المدخلة غير متطابقة مع أي حساب مسجل.
+          </div>
+
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/30">
+            <i class="fa-solid fa-check"></i> تحديث كلمة المرور والدخول
+          </button>
+
+          <button type="button" onclick="toggleRecoveryView(false)" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition text-xs">
+            العودة لشاشة الدخول
+          </button>
+        </form>
+
+        <div class="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 leading-relaxed text-center">
+          <i class="fa-solid fa-shield-halved text-indigo-400 ml-1"></i>
+          كما يمكن لـ <strong>مدير النظام (الأدمن)</strong> إعادة تعيين كلمة مرورك مباشرة من لوحة التحكم في أي وقت.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN HEADER -->
+  <header class="sticky top-0 z-40 glass-card border-b border-slate-800/80 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & Active User Info -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i class="fa-solid fa-wallet text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-black tracking-tight flex items-center gap-2" id="headerUserNameBadge">
+              المستشار المالي الذكي
+            </h1>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold" id="headerUserSubtitle">
+              إدارة الديون والادخار
+            </span>
+            <span id="adminBadgeTag" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
+              مدير النظام
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400" id="headerWorkspaceLabel">بيئة مالية مستقلة وخاصة</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons & Quick Controls -->
+      <div class="flex items-center flex-wrap gap-2 text-xs">
+        
+        <!-- Calendar Toggle -->
+        <button onclick="toggleCalendarSystem()" id="calendarToggleBtn" title="التبديل بين التقويم الهجري والميلادي" class="px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/80 hover:bg-slate-800 text-slate-200 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-moon text-amber-400 text-xs"></i>
+          <span id="calendarToggleLabel" class="font-bold">هجري</span>
+        </button>
+
+        <!-- Theme Switcher -->
+        <div class="flex items-center bg-slate-900/80 border border-slate-700/80 rounded-xl p-0.5">
+          <button onclick="setThemeMode('light')" id="themeBtnLight" title="نهاري" class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 transition">
+            <i class="fa-solid fa-sun text-xs"></i>
+          </button>
+          <button onclick="setThemeMode('dark')" id="themeBtnDark" title="ليلي" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 transition">
+            <i class="fa-solid fa-moon text-xs"></i>
+          </button>
+          <button onclick="setThemeMode('system')" id="themeBtnSystem" title="تلقائي" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 transition">
+            <i class="fa-solid fa-desktop text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Month Dropdown Selector -->
+        <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 shadow-inner">
+          <i class="fa-regular fa-calendar-days text-brand-400 ml-1.5 text-xs"></i>
+          <select id="monthSelector" onchange="changeSelectedMonth(this.value)" class="bg-slate-900 font-bold text-white focus:outline-none cursor-pointer text-xs">
+          </select>
+        </div>
+
+        <!-- Settings & Multi-User Control Panel Button -->
+        <button onclick="openSettingsModal()" class="px-3 py-1.5 font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders"></i>
+          <span>لوحة التحكم</span>
+        </button>
+
+        <!-- Add Extra Income Button -->
+        <button onclick="openAddIncomeModal()" class="px-2.5 py-1.5 font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-plus text-emerald-400"></i>
+          <span class="hidden sm:inline">دخل إضافي</span>
+        </button>
+
+        <!-- Add Expense Primary Button -->
+        <button onclick="openAddExpenseModal()" class="px-3.5 py-1.5 font-bold rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/30 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i>
+          <span>تسجيل مصروف</span>
+        </button>
+
+        <!-- Logout Button -->
+        <button onclick="handleLogout()" title="تسجيل الخروج والتبديل بين الحسابات" class="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- 3. MAIN DASHBOARD CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-grow space-y-6">
+
+    <!-- KPI Cards Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <!-- Total Income -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all hover:border-slate-600">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-400">إجمالي الدخل الشهري</span>
+          <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-money-bill-wave"></i>
+          </span>
+        </div>
+        <div class="mt-2">
+          <span id="kpiTotalIncome" class="text-2xl font-black text-emerald-400">0</span>
+          <span class="text-xs text-slate-400 mr-1">ريال</span>
+        </div>
+        <p id="kpiIncomeSubtext" class="text-[11px] text-slate-400 mt-1 truncate">راتب ثابت + إضافي</p>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500/40"></div>
+      </div>
+
+      <!-- Total Expenses -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all hover:border-slate-600">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-400">إجمالي المصروفات</span>
+          <span class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-receipt"></i>
+          </span>
+        </div>
+        <div class="mt-2">
+          <span id="kpiTotalExpense" class="text-2xl font-black text-rose-400">0</span>
+          <span class="text-xs text-slate-400 mr-1">ريال</span>
+        </div>
+        <p id="kpiExpenseSubtext" class="text-[11px] text-slate-400 mt-1 truncate">0 عمليات مسجلة</p>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-rose-500/40"></div>
+      </div>
+
+      <!-- Available Cash Liquidity / Deficit -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all hover:border-slate-600">
+        <div class="flex items-center justify-between">
+          <span id="kpiSurplusLabel" class="text-xs font-semibold text-slate-400">فائض السيولة المتاح</span>
+          <span id="kpiSurplusIcon" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </span>
+        </div>
+        <div class="mt-2">
+          <span id="kpiNetSurplus" class="text-2xl font-black text-white">0</span>
+          <span class="text-xs text-slate-400 mr-1">ريال</span>
+        </div>
+        <p id="kpiSurplusPercent" class="text-[11px] text-slate-400 mt-1 truncate">نسبة الفائض من الدخل: 0%</p>
+        <div id="kpiSurplusBar" class="absolute bottom-0 left-0 right-0 h-1 bg-blue-500/40"></div>
+      </div>
+
+      <!-- Cumulative Savings Vault -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all border border-cyan-500/30 bg-gradient-to-br from-cyan-950/20 to-slate-900/40 hover:border-cyan-500/60">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-cyan-300 flex items-center gap-1">
+            <i class="fa-solid fa-piggy-bank text-cyan-400"></i>
+            صندوق الادخار التراكمي
+          </span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold" id="savingsBadgeStatus">متاح للسحب</span>
+        </div>
+        <div class="mt-2">
+          <span id="kpiSavingsTotal" class="text-2xl font-black text-cyan-400">0</span>
+          <span class="text-xs text-slate-400 mr-1">ريال</span>
+        </div>
+        <p id="kpiSavingsSubtext" class="text-[11px] text-slate-300 mt-1 truncate">يمكن الصرف منه مباشرة دون ديون</p>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-cyan-500"></div>
+      </div>
+
+      <!-- Debt & Credit Card Liabilities -->
+      <div class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all border border-amber-500/30 bg-gradient-to-br from-amber-950/20 to-slate-900/40 hover:border-amber-500/60">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
+            <i class="fa-solid fa-credit-card text-amber-400"></i>
+            ديون وبطاقات مستحقة
+          </span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold" id="debtCountBadge">0 ذمة</span>
+        </div>
+        <div class="mt-2">
+          <span id="kpiDebtAmount" class="text-2xl font-black text-amber-400">0</span>
+          <span class="text-xs text-slate-400 mr-1">ريال</span>
+        </div>
+        <p id="kpiDebtSubtext" class="text-[11px] text-slate-300 mt-1 truncate">يجب سدادها في ميزانية الشهر القادم</p>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-amber-500"></div>
+      </div>
+
+    </div>
+
+    <!-- Active Debt Warning & Settle Banner -->
+    <div id="debtAlertBanner" class="hidden glass-card rounded-2xl p-4 sm:p-5 border-l-4 border-l-amber-500 transition-all bg-gradient-to-r from-amber-950/30 via-slate-900/50 to-slate-900/50">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5 text-lg">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-amber-200 flex items-center gap-2">
+              تنبيه تمويل عجز الصرف: ديون مسجلة على البطاقات والسلف
+              <span id="debtOverdraftTag" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">مطلوب سدادها</span>
+            </h3>
+            <p id="debtAlertDescription" class="text-xs text-slate-300 leading-relaxed">
+              تجاوزت المصروفات الدخل الشهري. قام النظام آلياً بتحويل الفائض إلى ذمة مستحقة على البطاقة الائتمانية / السلفة.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <button onclick="openSettleDebtModal()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/30 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-money-check"></i>
+            <span>ترحيل وسداد في الشهر القادم</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Predictive Insights Banner -->
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border-l-4 border-l-brand-500 transition-all">
+      <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-500/15 text-brand-400 flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-brain text-base"></i>
+        </div>
+        <div class="flex-grow space-y-1">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold flex items-center gap-2">
+              تحليل التنبؤ الذكي ومسار الصرف
+              <span id="trendIndicatorBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">سلوك مستقر</span>
+            </h3>
+            <span class="text-[11px] text-slate-400 hidden sm:inline" id="predictionBasis">مبني على تحليل الشهور السابقة</span>
+          </div>
+          <p id="smartInsightsText" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            جارٍ تحليل نمط الإنفاق وتوليد التوصيات المالية...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Trend & Forecast Chart (8 cols) -->
+      <div class="lg:col-span-8 glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div>
+            <h3 class="text-base font-bold flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-brand-400 text-sm"></i>
+              مسار التدفق المالي: الصرف، الادخار، وتوقعات الشهور
+            </h3>
+            <p class="text-xs text-slate-400">تتبع الصرف من الدخل والادخار والبطاقات مقارنة بالتنبؤات</p>
+          </div>
+          <div class="flex items-center gap-3 text-xs">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-indigo-500 inline-block"></span> نقد من الدخل</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-cyan-400 inline-block"></span> من الادخار</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-amber-500 inline-block"></span> ديون وبطاقات</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-brand-400 inline-block"></span> المتوقع</span>
+          </div>
+        </div>
+        <div class="relative h-64 sm:h-72 w-full">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Categories Breakdown Doughnut Chart (4 cols) -->
+      <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-base font-bold flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-amber-400 text-sm"></i>
+            توزيع المصروفات
+          </h3>
+          <span class="text-xs text-slate-400">حسب الفئة</span>
+        </div>
+        <div class="relative h-56 w-full flex items-center justify-center">
+          <canvas id="categoriesChart"></canvas>
+        </div>
+        <div id="topCategoryNote" class="text-center text-xs text-slate-300 pt-2 border-t border-slate-800">
+          أعلى بند إنفاق: <span class="font-bold text-brand-400" id="topCategoryName">-</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 50/30/20 Rule & Next Month Forecast Table -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- 50/30/20 Financial Health Indicator -->
+      <div class="lg:col-span-6 glass-card rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold flex items-center gap-2">
+            <i class="fa-solid fa-scale-unbalanced text-sky-400"></i>
+            مقياس 50/30/20 المالي العالمي وتوجيه المدخرات
+          </h3>
+          <span class="text-xs text-slate-400">المؤشر الصحي</span>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          توزيع الدخل الشهري: 50% احتياجات أساسية وسداد ديون، 30% رغبات ونمط حياة، 20% ادخار وبناء أصول.
+        </p>
+
+        <!-- Progress Bars -->
+        <div class="space-y-3 pt-1">
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">الاحتياجات وسداد الديون (الهدف: حتى 50%)</span>
+              <span id="ruleNeedsPercent" class="font-bold text-sky-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-800/80 h-2.5 rounded-full overflow-hidden">
+              <div id="ruleNeedsBar" class="bg-sky-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">الرغبات ونمط الحياة (الهدف: حتى 30%)</span>
+              <span id="ruleWantsPercent" class="font-bold text-amber-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-800/80 h-2.5 rounded-full overflow-hidden">
+              <div id="ruleWantsBar" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300">الادخار التراكمي (الهدف: 20% فأكثر)</span>
+              <span id="ruleSavingsPercent" class="font-bold text-emerald-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-800/80 h-2.5 rounded-full overflow-hidden">
+              <div id="ruleSavingsBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forecast Breakdown Table -->
+      <div class="lg:col-span-6 glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold flex items-center gap-2">
+            <i class="fa-solid fa-calculator text-brand-400"></i>
+            تقدير ميزانية الشهر القادم بالتفصيل
+          </h3>
+          <span class="text-xs px-2 py-0.5 rounded bg-brand-500/10 text-brand-400 font-mono" id="forecastNextMonthName">الميزانية الاستشرافية</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-3">حساب ذكي يستبعد الطوارئ ويدرج تلقائياً الديون والبطاقات المستحق سدادها.</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-xs">
+            <thead>
+              <tr class="text-slate-400 border-b border-slate-800 pb-1">
+                <th class="py-2">الفئة</th>
+                <th class="py-2">طريقة التقدير</th>
+                <th class="py-2 text-left">المبلغ المتوقع</th>
+              </tr>
+            </thead>
+            <tbody id="forecastTableBody" class="divide-y divide-slate-800/60">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pt-3 mt-2 border-t border-slate-800 flex justify-between items-center text-xs">
+          <span class="text-slate-300 font-medium">مجموع الصرف والالتزام التقديري:</span>
+          <span id="forecastTableTotal" class="font-bold text-brand-400 text-sm">0 ريال</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Expenses Table & Filter Row -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-bold flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-slate-400 text-sm"></i>
+            سجل العمليات ومصادر التمويل للشهر
+          </h3>
+          <p class="text-xs text-slate-400">متابعة وسيلة التمويل: من الدخل المتاح، من صندوق الادخار، أو بطاقة ائتمانية / سلفة</p>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-xs text-slate-500"></i>
+            <input type="text" id="expenseSearchInput" oninput="filterExpensesTable()" placeholder="بحث في الوصف..." class="bg-slate-900 border border-slate-700 rounded-xl pr-8 pl-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 w-36 sm:w-44">
+          </div>
+          <select id="expenseCategoryFilter" onchange="filterExpensesTable()" class="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500 cursor-pointer">
+            <option value="ALL">جميع الفئات</option>
+            <option value="ثابت والتزامات">ثابت والتزامات</option>
+            <option value="معيشة وبقالة">معيشة وبقالة</option>
+            <option value="نقل ومحروقات">نقل ومحروقات</option>
+            <option value="فواتير واشتراكات">فواتير واشتراكات</option>
+            <option value="مطاعم وكافيهات">مطاعم وكافيهات</option>
+            <option value="تسوق ورفاهية">تسوق ورفاهية</option>
+            <option value="صحة وعلاج">صحة وعلاج</option>
+            <option value="ادخار واستثمار">ادخار واستثمار (تحويل للصندوق)</option>
+            <option value="سحب من الادخار">سحب من الادخار (تمويل)</option>
+            <option value="سداد ديون وبطاقات">سداد ديون وبطاقات</option>
+            <option value="أخرى">أخرى</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-right text-xs sm:text-sm">
+          <thead class="bg-slate-900/90 text-slate-400 font-semibold border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">التاريخ</th>
+              <th class="py-3 px-4">الفئة</th>
+              <th class="py-3 px-4">الوصف</th>
+              <th class="py-3 px-4">المبلغ</th>
+              <th class="py-3 px-4">مصدر التمويل</th>
+              <th class="py-3 px-4 text-center">النوع</th>
+              <th class="py-3 px-4 text-center">إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody" class="divide-y divide-slate-800/60 bg-slate-900/30">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyExpenseMessage" class="hidden text-center py-8 text-slate-400">
+        <i class="fa-regular fa-folder-open text-3xl mb-2 text-slate-600 block"></i>
+        لا توجد مصروفات مسجلة تطابق البحث لهذا الشهر.
+      </div>
+    </div>
+
+    <!-- Backup, Restore & Safe Reset Footer Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pt-4 pb-2 text-xs text-slate-400 border-t border-slate-800">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-shield-halved text-brand-400"></i>
+        <span>بيئة متعددة الحسابات ومحمية. مهيأة بالكامل للرفع على GitHub Pages.</span>
+      </div>
+      
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <button onclick="exportDataJson()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 font-medium">
+          <i class="fa-solid fa-download text-emerald-400"></i>
+          <span>نسخ احتياطي شامل</span>
+        </button>
+
+        <button onclick="document.getElementById('importFileInput').click()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 font-medium">
+          <i class="fa-solid fa-upload text-sky-400"></i>
+          <span>استعادة نسخة</span>
+        </button>
+        <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importDataJson(event)">
+
+        <button onclick="promptSafeResetSystem()" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition flex items-center gap-1.5 font-medium">
+          <i class="fa-solid fa-shield-virus"></i>
+          <span>تصفير آمن مع نسخة إجبارية</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 4. MODALS (Popups) -->
+
+  <!-- MODAL 1: Add/Edit Expense Modal -->
+  <div id="addExpenseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i id="expenseModalIcon" class="fa-solid fa-cart-plus text-brand-400"></i>
+          <span id="expenseModalTitle">تسجيل مصروف جديد</span>
+        </h3>
+        <button type="button" onclick="closeModal('addExpenseModal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Live Balances Inside Modal -->
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+          <span class="text-slate-400 block text-[11px]">رصيد الدخل المتاح:</span>
+          <span id="modalCurrentAvailableCash" class="font-black text-emerald-400 text-sm">0 ريال</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-cyan-800/40">
+          <span class="text-cyan-300 block text-[11px]">صندوق الادخار المتاح:</span>
+          <span id="modalCurrentAvailableSavings" class="font-black text-cyan-400 text-sm">0 ريال</span>
+        </div>
+      </div>
+
+      <form id="addExpenseForm" onsubmit="handleSaveExpense(event)" class="space-y-3.5 text-xs sm:text-sm">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">المبلغ (ريال) <span class="text-rose-400">*</span></label>
+          <input type="number" step="0.01" min="0.01" id="expAmount" required placeholder="0.00" oninput="checkFundingSourceSuggestion()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500 font-bold text-base">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">فئة العملية <span class="text-rose-400">*</span></label>
+          <select id="expCategory" required onchange="handleCategorySelectionChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500 cursor-pointer">
+            <option value="معيشة وبقالة" selected>معيشة وبقالة (سوبرماركت، تموين)</option>
+            <option value="ثابت والتزامات">ثابت والتزامات (إيجار، أقساط دورية)</option>
+            <option value="نقل ومحروقات">نقل ومحروقات (بنزين، مواصلات)</option>
+            <option value="فواتير واشتراكات">فواتير واشتراكات (كهرباء، اتصالات، نت)</option>
+            <option value="مطاعم وكافيهات">مطاعم وكافيهات</option>
+            <option value="تسوق ورفاهية">تسوق ورفاهية (ملابس، أجهزة)</option>
+            <option value="صحة وعلاج">صحة وعلاج (أدوية، مستشفيات)</option>
+            <option value="ادخار واستثمار">ادخار واستثمار (تحويل لصندوق الادخار)</option>
+            <option value="سداد ديون وبطاقات">سداد ديون وبطاقات ائتمانية</option>
+            <option value="أخرى">أخرى</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">وصف العملية</label>
+          <input type="text" id="expDescription" placeholder="مثال: مشتريات هايبرماركت، صيانة..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">التاريخ</label>
+            <input type="date" id="expDate" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">مصدر التمويل / وسيلة الدفع</label>
+            <select id="expFundingSource" onchange="handleFundingSourceChangeManual()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+              <option value="الدخل الشهري المتاح">الدخل الشهري المتاح (كاش / مدى)</option>
+              <option value="السحب من صندوق الادخار">السحب من صندوق الادخار (بدون دين)</option>
+              <option value="بطاقة ائتمانية (دين)">بطاقة ائتمانية (دين مستحق سداده)</option>
+              <option value="سلفة من شخص (دين)">سلفة من شخص (دين)</option>
+              <option value="تمويل / سحب على المكشوف">تمويل / سحب على المكشوف</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Split Payment Option Box -->
+        <div id="splitPaymentBox" class="hidden p-3 rounded-xl bg-amber-950/30 border border-amber-500/40 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-code-fork"></i>
+              تجزئة الدفع الذكية (بين الدخل والبطاقة)
+            </span>
+            <input type="checkbox" id="enableSplitCheckbox" checked onchange="toggleSplitPaymentMode()" class="rounded accent-amber-500 w-4 h-4 cursor-pointer">
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            المبلغ يتجاوز سيولة الدخل المتبقية. هل ترغب بخصم الرصيد المتوفر كاملاً (<span id="splitCashPart" class="font-bold text-emerald-400">0</span>) لإنهاء الدخل، وترحيل المتبقي (<span id="splitDebtPart" class="font-bold text-amber-400">0</span>) تلقائياً كدين على البطاقة؟
+          </p>
+        </div>
+
+        <div id="fundingSuggestionNote" class="text-[11px] p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-brand-400"></i>
+          <span id="fundingSuggestionText">سيتم الخصم مباشرة من رصيد الدخل الشهري المتاح.</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+          <input type="checkbox" id="expIsOutlier" class="mt-1 rounded accent-brand-500 w-4 h-4 cursor-pointer">
+          <div>
+            <label for="expIsOutlier" class="text-slate-200 font-bold cursor-pointer">مصروف طارئ / غير متكرر</label>
+            <p class="text-[11px] text-slate-400">عزل هذا المصروف من معادلة التنبؤ للشهر القادم لكي لا يرفع التقديرات بصورة غير دقيقة.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('addExpenseModal')" class="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition">إلغاء</button>
+          <button type="submit" id="saveExpenseSubmitBtn" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-brand-600/30">
+            <i class="fa-solid fa-check"></i> حفظ العملية
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Settings & Control Panel -->
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">لوحة التحكم والإعدادات</h3>
+            <p class="text-[11px] text-slate-400">إدارة الملف المالي، والراتب والعلاوات، وإدارة حسابات العائلة (للأدمن)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Tabs inside Settings Modal -->
+      <div class="flex border-b border-slate-800 text-xs font-bold gap-2">
+        <button type="button" id="tabBtnProfile" onclick="switchSettingsTab('profile')" class="py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-user"></i> حسابي والراتب
+        </button>
+        <button type="button" id="tabBtnAdminUsers" onclick="switchSettingsTab('users')" class="hidden py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-users-gear text-indigo-400"></i> إدارة الحسابات العائلية (للأدمن)
+        </button>
+      </div>
+
+      <!-- TAB 1: Profile & Salary Settings -->
+      <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="space-y-4 text-xs sm:text-sm">
+        <div id="settingsTabProfile" class="space-y-3">
+          
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+            <h4 class="font-bold text-indigo-300 flex items-center gap-1.5 text-xs">
+              <i class="fa-solid fa-user-tie"></i> البيانات الشخصية والمهنية
+            </h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">الاسم المعروض</label>
+                <input type="text" id="settingUserName" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">المسمى الوظيفي</label>
+                <input type="text" id="settingJobTitle" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">جهة العمل</label>
+                <input type="text" id="settingEmployer" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">رمز الأمان للاسترداد (Recovery Key)</label>
+                <input type="text" id="settingSecurityKey" placeholder="مثال: رقم سري خاص بك" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+            <h4 class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+              <i class="fa-solid fa-coins"></i> إعدادات الراتب والعلاوة وسريانها
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">الراتب الأساسي الثابت (ريال)</label>
+                <input type="number" step="0.01" min="0" id="settingBaseSalary" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold">
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">مقدار العلاوة الدائمة (ريال)</label>
+                <input type="number" step="0.01" min="0" id="settingAllowanceAmount" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-slate-300 mb-1 font-semibold">تاريخ سريان العلاوة (ابتداءً من هذا التاريخ)</label>
+              <input type="date" id="settingAllowanceEffectiveDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              <p class="text-[11px] text-slate-400 mt-1">
+                تطبق العلاوة تلقائياً في الشهور التي توافق أو تلي هذا التاريخ فقط، ولا تؤثر على الشهور السابقة.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+            <h4 class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
+              <i class="fa-solid fa-lock"></i> تغيير كلمة المرور لحسابك
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">كلمة المرور الجديدة</label>
+                <div class="relative">
+                  <input type="password" id="settingLoginPass" class="w-full bg-slate-900 border border-slate-700 rounded-xl pr-3 pl-8 py-2 text-white">
+                  <button type="button" onclick="togglePasswordVisibility('settingLoginPass', 'settingEyeIcon')" class="absolute left-2.5 top-2 text-slate-400 hover:text-white p-0.5">
+                    <i class="fa-solid fa-eye text-xs" id="settingEyeIcon"></i>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">تأكيد كلمة المرور</label>
+                <input type="password" id="settingLoginPassConfirm" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-brand-600/30">
+              <i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- TAB 2: Multi-User Admin Management (Exclusive to Admin) -->
+      <div id="settingsTabUsers" class="hidden space-y-4 text-xs sm:text-sm">
+        
+        <!-- Add New User Sub-Form -->
+        <div class="p-4 rounded-xl bg-slate-950 border border-indigo-500/30 space-y-3">
+          <h4 class="font-bold text-indigo-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-user-plus text-indigo-400"></i>
+            إضافة حساب مستقل جديد (زوجتي، أختي، صديقي...)
+          </h4>
+          <p class="text-slate-400 text-xs">
+            كل حساب يتم إنشاؤه يحصل على بيئة مالية معزولة تماماً (راتب خاص، مصاريف مستقلة، وصندوق ادخار خاص).
+          </p>
+
+          <form id="addNewUserForm" onsubmit="handleCreateNewUser(event)" class="space-y-3 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">اسم المستخدم للدخول <span class="text-rose-400">*</span></label>
+                <input type="text" id="newUsername" required placeholder="اسم المستخدم" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">الاسم المعروض <span class="text-rose-400">*</span></label>
+                <input type="text" id="newDisplayName" required placeholder="الاسم الظاهر" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">كلمة المرور المبدئية <span class="text-rose-400">*</span></label>
+                <input type="password" id="newPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">الراتب الأساسي المبدئي (ريال)</label>
+                <input type="number" step="0.01" id="newBaseSalary" value="5000" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div>
+                <label class="block text-slate-300 mb-1 font-semibold">رمز الأمان للاسترداد</label>
+                <input type="text" id="newSecurityKey" value="1234" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-1">
+              <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/30">
+                <i class="fa-solid fa-plus"></i> إنشاء الحساب وتفعيله
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- List of Registered Users -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-slate-300 flex items-center gap-1.5 text-xs">
+            <i class="fa-solid fa-users"></i> قائمة الحسابات المسجلة في النظام
+          </h4>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-right text-xs">
+              <thead class="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">المستخدم</th>
+                  <th class="py-2.5 px-3">الاسم المعروض</th>
+                  <th class="py-2.5 px-3">الراتب</th>
+                  <th class="py-2.5 px-3">النوع</th>
+                  <th class="py-2.5 px-3 text-center">إجراءات الحساب</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody" class="divide-y divide-slate-800/60 bg-slate-900/40">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Admin Edit User Modal -->
+  <div id="adminEditUserModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-amber-400"></i>
+          <span>تعديل بيانات المستخدم: </span>
+          <span id="editUserTargetUname" class="text-indigo-400 font-mono"></span>
+        </h3>
+        <button type="button" onclick="closeModal('adminEditUserModal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveAdminEditUser(event)" class="space-y-3.5 text-xs sm:text-sm">
+        <input type="hidden" id="editUserOriginalUname">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">الاسم المعروض</label>
+          <input type="text" id="editUserDisplayName" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">المسمى الوظيفي</label>
+          <input type="text" id="editUserJobTitle" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">جهة العمل</label>
+          <input type="text" id="editUserEmployer" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">الراتب الأساسي (ريال)</label>
+          <input type="number" step="0.01" id="editUserBaseSalary" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">رمز الأمان للاسترداد</label>
+          <input type="text" id="editUserSecurityKey" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('adminEditUserModal')" class="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition">إلغاء</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-amber-600/30">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ التعديل
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Settle Debt Next Month Modal -->
+  <div id="settleDebtModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-money-bill-transfer text-amber-400"></i>
+          سداد وترحيل الديون للشهر القادم
+        </h3>
+        <button type="button" onclick="closeModal('settleDebtModal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        <p class="text-slate-300 leading-relaxed">
+          إجمالي الديون والبطاقات المستحقة من هذا الشهر هي:
+          <span id="settleModalDebtTotal" class="font-bold text-amber-400 text-base">0 ريال</span>
+        </p>
+        
+        <p class="text-slate-400 text-xs">
+          سيقوم النظام بإنشاء مصروف رسمي في الشهر التالي بعنوان <strong class="text-slate-200">"سداد مديونية / بطاقة ائتمانية مرحلة"</strong> ليتم خصمها من دخل الشهر القادم وتنظيف سجل الديون.
+        </p>
+
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+          <label class="block text-slate-300 font-semibold">مبلغ السداد للشهر القادم (ريال):</label>
+          <input type="number" step="0.01" id="settleAmountInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('settleDebtModal')" class="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition">إلغاء</button>
+          <button type="button" onclick="executeSettleDebtNextMonth()" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-amber-600/30">
+            <i class="fa-solid fa-check-double"></i> تأكيد الترحيل والسداد
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Extra Income Modal -->
+  <div id="addIncomeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-coins text-emerald-400"></i>
+          تسجيل دخل إضافي للشهر الحالي
+        </h3>
+        <button type="button" onclick="closeModal('addIncomeModal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="addIncomeForm" onsubmit="handleSaveExtraIncome(event)" class="space-y-3.5 text-xs sm:text-sm">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">المبلغ الإضافي (ريال) <span class="text-rose-400">*</span></label>
+          <input type="number" step="0.01" min="1" id="extraIncomeAmount" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500 font-bold text-base">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">مصدر الدخل / الوصف <span class="text-rose-400">*</span></label>
+          <input type="text" id="extraIncomeSource" required placeholder="مثال: عمل حر، مكافأة أداء، كاش باك..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('addIncomeModal')" class="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition">إلغاء</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/30">
+            <i class="fa-solid fa-check"></i> إضافة الدخل
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: Admin Password Reset Modal for Other Users -->
+  <div id="adminResetPassModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-lock text-indigo-400"></i>
+          إعادة ضبط كلمة المرور للمستخدم
+        </h3>
+        <button type="button" onclick="closeModal('adminResetPassModal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        <p class="text-slate-300">
+          سيتم تغيير كلمة مرور المستخدم: <strong id="resetTargetUserLabel" class="text-indigo-400"></strong>
+        </p>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">كلمة المرور الجديدة</label>
+          <input type="text" id="adminNewPassInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('adminResetPassModal')" class="px-3.5 py-1.5 rounded-xl text-slate-300 hover:bg-slate-800 transition">إلغاء</button>
+          <button type="button" onclick="confirmAdminResetPassword()" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">
+            حفظ كلمة المرور
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: Custom Confirmation Modal -->
+  <div id="confirmActionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-6 text-center space-y-4 shadow-2xl">
+      <div class="w-12 h-12 mx-auto rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h4 id="confirmTitle" class="text-base font-bold text-white">تأكيد الإجراء</h4>
+        <p id="confirmMessage" class="text-xs text-slate-300 mt-1 leading-relaxed">هل أنت متأكد من المتابعة؟</p>
+      </div>
+      <div class="flex items-center justify-center gap-2 pt-2">
+        <button type="button" onclick="closeConfirmModal(false)" class="px-4 py-2 rounded-xl text-xs sm:text-sm text-slate-300 bg-slate-800 hover:bg-slate-700 transition font-medium">إلغاء</button>
+        <button type="button" id="confirmConfirmBtn" onclick="closeConfirmModal(true)" class="px-4 py-2 rounded-xl text-xs sm:text-sm bg-rose-600 hover:bg-rose-500 text-white font-bold transition">نعم، تابع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastNotification" class="fixed bottom-5 left-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm shadow-2xl">
+    <span id="toastIcon"><i class="fa-solid fa-circle-check text-brand-400"></i></span>
+    <span id="toastMessage">تم تنفيذ العملية بنجاح</span>
+  </div>
+
+  <!-- 5. JAVASCRIPT SYSTEM ENGINE -->
+  <script>
+    const SYSTEM_STORAGE_KEY = 'SMART_FINANCE_MULTI_USER_SYSTEM_V3';
+    const ACTIVE_USER_KEY = 'SMART_FINANCE_ACTIVE_USER';
+    const THEME_STORAGE_KEY = 'SMART_FINANCE_THEME';
+    const CALENDAR_STORAGE_KEY = 'SMART_FINANCE_CALENDAR_MODE';
+
+    function getStarterDatabase() {
+      return {
+        users: {
+          'halshuhiyb': {
+            role: 'admin',
+            credentials: {
+              username: 'halshuhiyb',
+              password: 'Hh@537573'
+            },
+            profile: {
+              name: 'حسين يوسف الشهيب',
+              jobTitle: 'محلل ومصمم نظم',
+              employer: 'إمارة المنطقة الشرقية',
+              securityKey: '5375'
+            },
+            baseSalary: 18652.30,
+            salaryAllowance: 0,
+            allowanceEffectiveDate: '',
+            months: {
+              '2026-06': {
+                name: 'يونيو 2026',
+                extraIncomes: [{ id: 'inc_1', amount: 1500, source: 'حافز أداء استثنائي' }],
+                expenses: [
+                  { id: 'e1', date: '2026-06-01', category: 'ثابت والتزامات', description: 'أقساط والتزامات شهرية', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e2', date: '2026-06-03', category: 'فواتير واشتراكات', description: 'فواتير منزل وإنترنت', amount: 750, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e3', date: '2026-06-07', category: 'معيشة وبقالة', description: 'تموين أسري ومقاضي', amount: 2200, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e4', date: '2026-06-12', category: 'نقل ومحروقات', description: 'وقود وصيانة سيارات', amount: 700, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e5', date: '2026-06-18', category: 'مطاعم وكافيهات', description: 'وجبات عائلية وتوصيل', amount: 950, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e6', date: '2026-06-25', category: 'ادخار واستثمار', description: 'تحويل لصندوق الادخار التراكمي', amount: 4000, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
+                ]
+              },
+              '2026-07': {
+                name: 'يوليو 2026',
+                extraIncomes: [{ id: 'inc_2', amount: 2000, source: 'استشارات حرة' }],
+                expenses: [
+                  { id: 'e7', date: '2026-07-01', category: 'ثابت والتزامات', description: 'أقساط والتزامات شهرية', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e8', date: '2026-07-04', category: 'فواتير واشتراكات', description: 'فواتير خدمات', amount: 820, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e9', date: '2026-07-08', category: 'معيشة وبقالة', description: 'تموين السوبرماركت', amount: 2400, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e10', date: '2026-07-14', category: 'نقل ومحروقات', description: 'وقود شهري', amount: 750, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e11', date: '2026-07-19', category: 'مطاعم وكافيهات', description: 'مناسبات ومطاعم', amount: 1100, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e12', date: '2026-07-22', category: 'ادخار واستثمار', description: 'تحويل لصندوق الادخار', amount: 4000, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
+                ]
+              },
+              '2026-08': {
+                name: 'أغسطس 2026',
+                extraIncomes: [],
+                expenses: [
+                  { id: 'e13', date: '2026-08-01', category: 'ثابت والتزامات', description: 'التزامات شهرية', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e14', date: '2026-08-05', category: 'فواتير واشتراكات', description: 'فواتير دورية', amount: 780, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e15', date: '2026-08-09', category: 'معيشة وبقالة', description: 'مقاضي المنزل', amount: 2350, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e16', date: '2026-08-15', category: 'نقل ومحروقات', description: 'محروقات', amount: 720, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e17', date: '2026-08-20', category: 'مطاعم وكافيهات', description: 'مطاعم', amount: 1050, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e18', date: '2026-08-25', category: 'ادخار واستثمار', description: 'تغذية صندوق الطوارئ والادخار', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
+                ]
+              },
+              '2026-09': {
+                name: 'سبتمبر 2026 (الحالي)',
+                extraIncomes: [{ id: 'inc_3', amount: 800, source: 'استرداد نقدي كاش باك' }],
+                expenses: [
+                  { id: 'e19', date: '2026-09-01', category: 'ثابت والتزامات', description: 'التزامات وأقساط', amount: 4500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e20', date: '2026-09-04', category: 'فواتير واشتراكات', description: 'فواتير كهرباء واتصالات', amount: 800, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e21', date: '2026-09-08', category: 'معيشة وبقالة', description: 'مقاضي استهلاكية وتموين', amount: 2500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e22', date: '2026-09-12', category: 'نقل ومحروقات', description: 'وقود سيارة', amount: 700, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e23', date: '2026-09-16', category: 'مطاعم وكافيهات', description: 'مطاعم وضيافة', amount: 1150, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e24', date: '2026-09-22', category: 'تسوق ورفاهية', description: 'مستلزمات واحتياجات شخصية', amount: 950, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'e25', date: '2026-09-25', category: 'ادخار واستثمار', description: 'تحويل لصندوق الادخار التراكمي', amount: 3500, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
+                ]
+              }
+            }
+          },
+          'wife': {
+            role: 'member',
+            credentials: {
+              username: 'wife',
+              password: '123'
+            },
+            profile: {
+              name: 'أم يوسف (الزوجة)',
+              jobTitle: 'معلمة',
+              employer: 'وزارة التعليم',
+              securityKey: '4321'
+            },
+            baseSalary: 8500,
+            salaryAllowance: 500,
+            allowanceEffectiveDate: '2026-08-01',
+            months: {
+              '2026-09': {
+                name: 'سبتمبر 2026 (الحالي)',
+                extraIncomes: [{ id: 'w_inc1', amount: 400, source: 'حوافز نشاط' }],
+                expenses: [
+                  { id: 'w_e1', date: '2026-09-02', category: 'تسوق ورفاهية', description: 'مستلزمات شخصية', amount: 800, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'w_e2', date: '2026-09-06', category: 'معيشة وبقالة', description: 'أغراض خاصة بالمنزل', amount: 650, fundingSource: 'الدخل الشهري المتاح', isOutlier: false },
+                  { id: 'w_e3', date: '2026-09-15', category: 'ادخار واستثمار', description: 'ادخار شهري في الصندوق', amount: 2000, fundingSource: 'الدخل الشهري المتاح', isOutlier: false }
+                ]
+              }
+            }
+          }
+        }
+      };
+    }
+
+    let systemDb = loadSystemDatabase();
+    let activeUsername = getInitialActiveUsername();
+    let currentMonthKey = '2026-09';
+    let calendarMode = localStorage.getItem(CALENDAR_STORAGE_KEY) || 'gregorian';
+    let themeMode = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+
+    let trendChartInstance = null;
+    let categoriesChartInstance = null;
+    let confirmCallback = null;
+    let adminResetTargetUser = null;
+    let currentEditingExpenseId = null;
+
+    function getInitialActiveUsername() {
+      const stored = localStorage.getItem(ACTIVE_USER_KEY);
+      if (stored && systemDb.users[stored]) return stored;
+      return 'halshuhiyb';
+    }
+
+    function loadSystemDatabase() {
+      try {
+        const saved = localStorage.getItem(SYSTEM_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.users && Object.keys(parsed.users).length > 0) {
+            if (parsed.users['admin'] && !parsed.users['halshuhiyb']) {
+              const oldAdmin = parsed.users['admin'];
+              delete parsed.users['admin'];
+              parsed.users['halshuhiyb'] = {
+                ...oldAdmin,
+                role: 'admin',
+                credentials: { username: 'halshuhiyb', password: 'Hh@537573' },
+                profile: {
+                  name: 'حسين يوسف الشهيب',
+                  jobTitle: 'محلل ومصمم نظم',
+                  employer: 'إمارة المنطقة الشرقية',
+                  securityKey: '5375'
+                },
+                baseSalary: 18652.30
+              };
+              localStorage.setItem(SYSTEM_STORAGE_KEY, JSON.stringify(parsed));
+              localStorage.setItem(ACTIVE_USER_KEY, 'halshuhiyb');
+            }
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not read multi-user DB from localStorage', e);
+      }
+      return getStarterDatabase();
+    }
+
+    function saveSystemDatabase() {
+      try {
+        localStorage.setItem(SYSTEM_STORAGE_KEY, JSON.stringify(systemDb));
+      } catch (e) {
+        console.error('Failed to save multi-user system state', e);
+      }
+    }
+
+    function getActiveUserData() {
+      if (!systemDb.users[activeUsername]) {
+        activeUsername = Object.keys(systemDb.users)[0] || 'halshuhiyb';
+      }
+      return systemDb.users[activeUsername];
+    }
+
+    function checkAuthOnLoad() {
+      const isAuthed = localStorage.getItem('SMART_FINANCE_IS_AUTHENTICATED') === 'true';
+      const authScreen = document.getElementById('authScreen');
+      if (isAuthed && systemDb.users[activeUsername]) {
+        authScreen.classList.add('hidden');
+      } else {
+        authScreen.classList.remove('hidden');
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        toggleRecoveryView(false);
+      }
+    }
+
+    function toggleRecoveryView(showRecovery) {
+      document.getElementById('loginViewContainer').classList.toggle('hidden', showRecovery);
+      document.getElementById('recoveryViewContainer').classList.toggle('hidden', !showRecovery);
+      document.getElementById('loginErrorMsg').classList.add('hidden');
+      document.getElementById('recoveryErrorMsg').classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input || !icon) return;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      const err = document.getElementById('loginErrorMsg');
+
+      const userRecord = systemDb.users[u];
+      if (userRecord && userRecord.credentials?.password === p) {
+        err.classList.add('hidden');
+        activeUsername = u;
+        localStorage.setItem(ACTIVE_USER_KEY, u);
+        localStorage.setItem('SMART_FINANCE_IS_AUTHENTICATED', 'true');
+        document.getElementById('authScreen').classList.add('hidden');
+        
+        const userMonths = Object.keys(userRecord.months).sort();
+        if (userMonths.length > 0) {
+          currentMonthKey = userMonths[userMonths.length - 1];
+        }
+
+        showToast(`مرحباً بك يا ${userRecord.profile?.name || u}! تم الدخول لمساحتك المالية الخاصة.`, 'success');
+        renderApp();
+      } else {
+        err.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      showCustomConfirm('تسجيل الخروج والتبديل', 'هل ترغب في تسجيل الخروج وقفل الشاشة الحالية؟', (confirmed) => {
+        if (!confirmed) return;
+        localStorage.removeItem('SMART_FINANCE_IS_AUTHENTICATED');
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        toggleRecoveryView(false);
+        showToast('تم تسجيل الخروج بنجاح. يمكنك التبديل لحساب آخر.', 'info');
+      });
+    }
+
+    function handlePasswordRecovery(event) {
+      event.preventDefault();
+      const userIdent = document.getElementById('recoveryUserOrEmail').value.trim().toLowerCase();
+      const secKey = document.getElementById('recoverySecurityKey').value.trim();
+      const newPass = document.getElementById('recoveryNewPassword').value.trim();
+      const err = document.getElementById('recoveryErrorMsg');
+
+      let matchedUsername = null;
+      for (const [uname, udata] of Object.entries(systemDb.users)) {
+        const usernameMatch = uname.toLowerCase() === userIdent;
+        const keyMatch = (udata.profile?.securityKey || '') === secKey;
+
+        if (usernameMatch && keyMatch) {
+          matchedUsername = uname;
+          break;
+        }
+      }
+
+      if (matchedUsername) {
+        err.classList.add('hidden');
+        systemDb.users[matchedUsername].credentials.password = newPass;
+        saveSystemDatabase();
+        showToast('تم استعادة وتحديث كلمة المرور بنجاح! تم تسجيل دخولك.', 'success');
+
+        activeUsername = matchedUsername;
+        localStorage.setItem(ACTIVE_USER_KEY, matchedUsername);
+        localStorage.setItem('SMART_FINANCE_IS_AUTHENTICATED', 'true');
+        document.getElementById('authScreen').classList.add('hidden');
+        renderApp();
+      } else {
+        err.classList.remove('hidden');
+      }
+    }
+
+    function initTheme() {
+      applyTheme(themeMode);
+    }
+
+    function setThemeMode(mode) {
+      themeMode = mode;
+      localStorage.setItem(THEME_STORAGE_KEY, mode);
+      applyTheme(mode);
+      showToast(`تم تفعيل الثيم: ${mode === 'light' ? 'النهاري ☀️' : mode === 'dark' ? 'الليلي 🌙' : 'حسب النظام 💻'}`, 'info');
+    }
+
+    function applyTheme(mode) {
+      const html = document.documentElement;
+      let isDark = true;
+
+      if (mode === 'light') isDark = false;
+      else if (mode === 'dark') isDark = true;
+      else isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (isDark) {
+        html.classList.add('dark');
+        document.body.className = 'min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-brand-500 selection:text-white transition-colors duration-300';
+      } else {
+        html.classList.remove('dark');
+        document.body.className = 'min-h-screen flex flex-col bg-slate-50 text-slate-800 selection:bg-brand-500 selection:text-white transition-colors duration-300';
+      }
+
+      const btnLight = document.getElementById('themeBtnLight');
+      const btnDark = document.getElementById('themeBtnDark');
+      const btnSystem = document.getElementById('themeBtnSystem');
+
+      if (btnLight) btnLight.className = mode === 'light' ? 'p-1.5 rounded-lg text-amber-400 bg-slate-800' : 'p-1.5 rounded-lg text-slate-400 hover:text-amber-400';
+      if (btnDark) btnDark.className = mode === 'dark' ? 'p-1.5 rounded-lg text-blue-400 bg-slate-800' : 'p-1.5 rounded-lg text-slate-400 hover:text-blue-400';
+      if (btnSystem) btnSystem.className = mode === 'system' ? 'p-1.5 rounded-lg text-emerald-400 bg-slate-800' : 'p-1.5 rounded-lg text-slate-400 hover:text-emerald-400';
+
+      if (trendChartInstance) {
+        const forecast = calculateNextMonthForecast();
+        renderCharts(forecast);
+      }
+    }
+
+    function toggleCalendarSystem() {
+      calendarMode = calendarMode === 'gregorian' ? 'hijri' : 'gregorian';
+      localStorage.setItem(CALENDAR_STORAGE_KEY, calendarMode);
+      updateCalendarBtnUI();
+      renderApp();
+      showToast(`تم التحويل إلى التقويم: ${calendarMode === 'hijri' ? 'الهجري 🌙' : 'الميلادي 📅'}`, 'info');
+    }
+
+    function updateCalendarBtnUI() {
+      const btn = document.getElementById('calendarToggleBtn');
+      const label = document.getElementById('calendarToggleLabel');
+      if (!btn || !label) return;
+      if (calendarMode === 'hijri') {
+        label.innerText = 'هجري';
+        btn.classList.add('border-amber-500/40', 'text-amber-300');
+      } else {
+        label.innerText = 'ميلادي';
+        btn.classList.remove('border-amber-500/40', 'text-amber-300');
+      }
+    }
+
+    function formatDateDisplay(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const dateObj = new Date(dateStr + 'T00:00:00');
+        if (isNaN(dateObj.getTime())) return dateStr;
+
+        if (calendarMode === 'hijri') {
+          const hijriFormatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          return hijriFormatter.format(dateObj);
+        } else {
+          return dateStr;
+        }
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    function getMonthSalary(monthKey) {
+      const user = getActiveUserData();
+      const base = Number(user.baseSalary || 0);
+      const allowance = Number(user.salaryAllowance || 0);
+      const effectiveDate = user.allowanceEffectiveDate;
+
+      if (!effectiveDate || allowance <= 0) {
+        return base + allowance;
+      }
+
+      const effectiveMonthKey = effectiveDate.substring(0, 7);
+      if (monthKey >= effectiveMonthKey) {
+        return base + allowance;
+      } else {
+        return base;
+      }
+    }
+
+    function getMonthTotalIncome(monthKey) {
+      const fixed = getMonthSalary(monthKey);
+      const user = getActiveUserData();
+      const activeMonth = user.months[monthKey];
+      const extra = (activeMonth?.extraIncomes || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
+      return fixed + extra;
+    }
+
+    function getAvailableCashLiquidity(monthKey) {
+      const totalIncome = getMonthTotalIncome(monthKey);
+      const user = getActiveUserData();
+      const activeMonth = user.months[monthKey];
+      const cashSpent = (activeMonth?.expenses || [])
+        .filter(e => !e.fundingSource || e.fundingSource === 'الدخل الشهري المتاح')
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      return Math.max(0, totalIncome - cashSpent);
+    }
+
+    function getCumulativeSavingsBalance() {
+      const user = getActiveUserData();
+      let totalSaved = 0;
+      let totalWithdrawn = 0;
+
+      Object.values(user.months || {}).forEach(m => {
+        (m.expenses || []).forEach(e => {
+          if (e.category === 'ادخار واستثمار') {
+            totalSaved += Number(e.amount || 0);
+          }
+          if (e.fundingSource === 'السحب من صندوق الادخار' || e.category === 'سحب من الادخار') {
+            totalWithdrawn += Number(e.amount || 0);
+          }
+        });
+      });
+
+      return Math.max(0, totalSaved - totalWithdrawn);
+    }
+
+    function checkFundingSourceSuggestion() {
+      const availableCashLiquidity = getAvailableCashLiquidity(currentMonthKey);
+      const cumulativeSavings = getCumulativeSavingsBalance();
+      const amountInput = parseFloat(document.getElementById('expAmount')?.value) || 0;
+      const fundingSelect = document.getElementById('expFundingSource');
+      const noteText = document.getElementById('fundingSuggestionText');
+      const noteBox = document.getElementById('fundingSuggestionNote');
+      const splitBox = document.getElementById('splitPaymentBox');
+
+      const modalCash = document.getElementById('modalCurrentAvailableCash');
+      const modalSavings = document.getElementById('modalCurrentAvailableSavings');
+
+      if (modalCash) modalCash.innerText = `${availableCashLiquidity.toLocaleString()} ريال`;
+      if (modalSavings) modalSavings.innerText = `${cumulativeSavings.toLocaleString()} ريال`;
+
+      if (!fundingSelect || !noteText || !noteBox || !splitBox) return;
+
+      const selectedFunding = fundingSelect.value;
+
+      if (selectedFunding === 'السحب من صندوق الادخار') {
+        splitBox.classList.add('hidden');
+        if (amountInput > cumulativeSavings) {
+          noteText.innerHTML = `<span class="text-rose-400 font-bold">تنبيه:</span> المبلغ (${amountInput.toLocaleString()} ر.س) يتجاوز رصيد الادخار المتاح حالياً (${cumulativeSavings.toLocaleString()} ر.س).`;
+          noteBox.className = 'text-[11px] p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-200 flex items-center gap-2';
+        } else {
+          noteText.innerHTML = `سيتم السحب مباشرة من <strong>صندوق الادخار التراكمي</strong>، ولن يترتب عليه أي عجز أو دين على البطاقة.`;
+          noteBox.className = 'text-[11px] p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 flex items-center gap-2';
+        }
+        return;
+      }
+
+      if (amountInput > availableCashLiquidity && availableCashLiquidity > 0 && selectedFunding === 'الدخل الشهري المتاح') {
+        splitBox.classList.remove('hidden');
+        const excess = amountInput - availableCashLiquidity;
+        const splitCashPart = document.getElementById('splitCashPart');
+        const splitDebtPart = document.getElementById('splitDebtPart');
+        if (splitCashPart) splitCashPart.innerText = `${availableCashLiquidity.toLocaleString()} ر.س`;
+        if (splitDebtPart) splitDebtPart.innerText = `${excess.toLocaleString()} ر.س`;
+
+        if (document.getElementById('enableSplitCheckbox')?.checked) {
+          noteText.innerHTML = `<span class="text-amber-400 font-bold">تجزئة الدفع مفعّلة:</span> سيتم خصم (${availableCashLiquidity.toLocaleString()} ر.س) لإنهاء رصيد الدخل، وترحيل الباقي (${excess.toLocaleString()} ر.س) تلقائياً كدين على البطاقة.`;
+          noteBox.className = 'text-[11px] p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200 flex items-center gap-2';
+        }
+      } else if (availableCashLiquidity <= 0 && amountInput > 0 && selectedFunding === 'الدخل الشهري المتاح') {
+        splitBox.classList.add('hidden');
+        fundingSelect.value = 'بطاقة ائتمانية (دين)';
+        noteText.innerHTML = `<span class="text-rose-400 font-bold">نفاد رصيد الدخل:</span> لا توجد سيولة كافية. تم التحويل تلقائياً إلى <strong class="text-amber-300">بطاقة ائتمانية (دين)</strong>، أو يمكنك السحب من الادخار أعلاه.`;
+        noteBox.className = 'text-[11px] p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/30 text-rose-200 flex items-center gap-2';
+      } else {
+        splitBox.classList.add('hidden');
+        noteText.innerHTML = `السيولة كافية. الخصم مباشرة من رصيد الدخل المتاح (${availableCashLiquidity.toLocaleString()} ر.س متبقية).`;
+        noteBox.className = 'text-[11px] p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 flex items-center gap-2';
+      }
+    }
+
+    function handleCategorySelectionChange() {
+      const cat = document.getElementById('expCategory')?.value;
+      const fundingSelect = document.getElementById('expFundingSource');
+      if (cat === 'ادخار واستثمار' && fundingSelect) {
+        fundingSelect.value = 'الدخل الشهري المتاح';
+      }
+      checkFundingSourceSuggestion();
+    }
+
+    function toggleSplitPaymentMode() {
+      checkFundingSourceSuggestion();
+    }
+
+    function handleFundingSourceChangeManual() {
+      checkFundingSourceSuggestion();
+    }
+
+    function calculateNextMonthForecast() {
+      const user = getActiveUserData();
+      const sortedKeys = Object.keys(user.months).sort();
+      const currentIndex = sortedKeys.indexOf(currentMonthKey);
+      const historicalKeys = currentIndex >= 0 ? sortedKeys.slice(0, currentIndex + 1) : sortedKeys;
+      const last3Keys = historicalKeys.slice(-3);
+
+      const categories = [
+        'ثابت والتزامات',
+        'معيشة وبقالة',
+        'نقل ومحروقات',
+        'فواتير واشتراكات',
+        'مطاعم وكافيهات',
+        'تسوق ورفاهية',
+        'صحة وعلاج',
+        'ادخار واستثمار',
+        'سداد ديون وبطاقات',
+        'أخرى'
+      ];
+
+      const categoryForecasts = {};
+      let totalForecast = 0;
+
+      let weights = [1.0];
+      if (last3Keys.length === 2) weights = [0.4, 0.6];
+      if (last3Keys.length >= 3) weights = [0.2, 0.3, 0.5];
+
+      const activeMonth = user.months[currentMonthKey];
+      const currentMonthDebts = (activeMonth?.expenses || [])
+        .filter(e => e.fundingSource && e.fundingSource.includes('دين'))
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      categories.forEach(cat => {
+        if (cat === 'سداد ديون وبطاقات') {
+          categoryForecasts[cat] = {
+            amount: currentMonthDebts,
+            method: currentMonthDebts > 0 ? 'ترحيل إلزامي لسداد ديون وبطاقات الشهر الحالي' : 'لا توجد ديون مستحقة مرحلة'
+          };
+          totalForecast += currentMonthDebts;
+        } else if (cat === 'ثابت والتزامات') {
+          const latestKey = last3Keys[last3Keys.length - 1];
+          const latestMonthExpenses = user.months[latestKey]?.expenses || [];
+          const val = latestMonthExpenses
+            .filter(e => e.category === cat && !e.isOutlier)
+            .reduce((s, e) => s + Number(e.amount), 0);
+
+          categoryForecasts[cat] = {
+            amount: Math.round(val),
+            method: 'التزام دوري ثابت (100%)'
+          };
+          totalForecast += Math.round(val);
+        } else {
+          let weightedSum = 0;
+          let totalWeight = 0;
+
+          last3Keys.forEach((key, idx) => {
+            const mExpenses = user.months[key]?.expenses || [];
+            const catSpent = mExpenses
+              .filter(e => e.category === cat && !e.isOutlier && e.fundingSource !== 'السحب من صندوق الادخار')
+              .reduce((s, e) => s + Number(e.amount), 0);
+
+            const w = weights[idx] || 0.33;
+            weightedSum += catSpent * w;
+            totalWeight += w;
+          });
+
+          const predictedAmount = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+          categoryForecasts[cat] = {
+            amount: predictedAmount,
+            method: `متوسط مرجّح لآخر ${last3Keys.length} شهور`
+          };
+          totalForecast += predictedAmount;
+        }
+      });
+
+      let trendStatus = 'مستقر';
+      let trendMessage = '';
+      if (last3Keys.length >= 2) {
+        const prevKey = last3Keys[last3Keys.length - 2];
+        const currKey = last3Keys[last3Keys.length - 1];
+        const prevTotal = (user.months[prevKey]?.expenses || []).filter(e => !e.isOutlier).reduce((s, e) => s + Number(e.amount), 0);
+        const currTotal = (user.months[currKey]?.expenses || []).filter(e => !e.isOutlier).reduce((s, e) => s + Number(e.amount), 0);
+        const diff = currTotal - prevTotal;
+        const pct = prevTotal > 0 ? ((diff / prevTotal) * 100).toFixed(1) : 0;
+
+        if (diff > 400 && pct > 5) {
+          trendStatus = 'تصاعدي (حذر)';
+          trendMessage = `يلاحظ النظام ارتفاعاً بنسبة ${pct}% في وتيرة الإنفاق. نوصي بمراجعة بنود الرفاهية لضمان عدم تراكم ديون البطاقات.`;
+        } else if (diff < -400 && pct < -5) {
+          trendStatus = 'تنازلي موفّر';
+          trendMessage = `أداء ممتاز! استطعت خفض مصروفاتك بنسبة ${Math.abs(pct)}%، مما يتيح لك فائضاً أكبر لدعم صندوق الادخار وسداد الالتزامات.`;
+        } else {
+          trendStatus = 'مستقر ومثالي';
+          trendMessage = `سلوكك المالي متزن للغاية، والصرف يسير وفق التقديرات الموزونة الآمنة.`;
+        }
+      } else {
+        trendMessage = 'يجري بناء المؤشرات التراكمية؛ يرجى مواصلة تسجيل العمليات لرفع دقة الذكاء المالي.';
+      }
+
+      return {
+        categoryForecasts,
+        totalForecast,
+        trendStatus,
+        trendMessage,
+        currentMonthDebts,
+        analyzedMonthsCount: last3Keys.length
+      };
+    }
+
+    function renderApp() {
+      const user = getActiveUserData();
+      if (!user.months[currentMonthKey]) {
+        user.months[currentMonthKey] = {
+          name: currentMonthKey,
+          extraIncomes: [],
+          expenses: []
+        };
+      }
+
+      const activeMonth = user.months[currentMonthKey];
+      const fixedSalary = getMonthSalary(currentMonthKey);
+      const extraTotal = (activeMonth.extraIncomes || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
+      const totalIncome = fixedSalary + extraTotal;
+
+      const allExpenses = activeMonth.expenses || [];
+      const totalExpenses = allExpenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+      const cashExpenses = allExpenses
+        .filter(e => !e.fundingSource || e.fundingSource === 'الدخل الشهري المتاح')
+        .reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+      const debtExpenses = allExpenses
+        .filter(e => e.fundingSource && e.fundingSource.includes('دين'))
+        .reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+      const savingsSpentExpenses = allExpenses
+        .filter(e => e.fundingSource === 'السحب من صندوق الادخار' || e.category === 'سحب من الادخار')
+        .reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+      const netCashSurplus = totalIncome - cashExpenses;
+      const surplusPercent = totalIncome > 0 ? ((netCashSurplus / totalIncome) * 100).toFixed(1) : 0;
+      const cumulativeSavings = getCumulativeSavingsBalance();
+
+      const forecast = calculateNextMonthForecast();
+
+      const headerNameEl = document.getElementById('headerUserNameBadge');
+      if (headerNameEl) headerNameEl.innerText = user.profile?.name || activeUsername;
+
+      const headerSubEl = document.getElementById('headerUserSubtitle');
+      if (headerSubEl) {
+        headerSubEl.innerText = user.profile?.jobTitle ? `${user.profile.jobTitle} - ${user.profile.employer || ''}` : 'إدارة الديون والادخار';
+      }
+
+      const adminBadge = document.getElementById('adminBadgeTag');
+      if (adminBadge) {
+        adminBadge.classList.toggle('hidden', user.role !== 'admin');
+      }
+
+      const adminTabBtn = document.getElementById('tabBtnAdminUsers');
+      if (adminTabBtn) {
+        adminTabBtn.classList.toggle('hidden', user.role !== 'admin');
+      }
+
+      const kpiIncomeEl = document.getElementById('kpiTotalIncome');
+      if (kpiIncomeEl) kpiIncomeEl.innerText = totalIncome.toLocaleString('en-US');
+
+      const kpiIncomeSub = document.getElementById('kpiIncomeSubtext');
+      if (kpiIncomeSub) kpiIncomeSub.innerText = `راتب: ${fixedSalary.toLocaleString()} ر.س ${extraTotal > 0 ? `+ إضافي: ${extraTotal.toLocaleString()} ر.س` : ''}`;
+
+      const kpiExpEl = document.getElementById('kpiTotalExpense');
+      if (kpiExpEl) kpiExpEl.innerText = totalExpenses.toLocaleString('en-US');
+
+      const kpiExpSub = document.getElementById('kpiExpenseSubtext');
+      if (kpiExpSub) kpiExpSub.innerText = `${allExpenses.length} عمليات (${cashExpenses.toLocaleString()} نقد / ${debtExpenses.toLocaleString()} دين)`;
+
+      const kpiSavEl = document.getElementById('kpiSavingsTotal');
+      if (kpiSavEl) kpiSavEl.innerText = cumulativeSavings.toLocaleString('en-US');
+
+      const kpiSavSub = document.getElementById('kpiSavingsSubtext');
+      if (kpiSavSub) kpiSavSub.innerText = savingsSpentExpenses > 0 ? `تم سحب ${savingsSpentExpenses.toLocaleString()} ر.س هذا الشهر` : 'متاح للسحب والتمويل المباشر';
+
+      const netSurplusEl = document.getElementById('kpiNetSurplus');
+      const surplusBarEl = document.getElementById('kpiSurplusBar');
+      const surplusLabelEl = document.getElementById('kpiSurplusLabel');
+      const surplusPercentEl = document.getElementById('kpiSurplusPercent');
+
+      if (netSurplusEl && surplusBarEl && surplusLabelEl && surplusPercentEl) {
+        if (netCashSurplus >= 0) {
+          netSurplusEl.innerText = '+' + netCashSurplus.toLocaleString('en-US');
+          netSurplusEl.className = 'text-2xl font-black text-emerald-400';
+          surplusBarEl.className = 'absolute bottom-0 left-0 right-0 h-1 bg-emerald-500';
+          surplusLabelEl.innerText = 'فائض السيولة النقدية';
+          surplusPercentEl.innerText = `نسبة الفائض من الدخل: ${surplusPercent}%`;
+        } else {
+          netSurplusEl.innerText = netCashSurplus.toLocaleString('en-US');
+          netSurplusEl.className = 'text-2xl font-black text-rose-400';
+          surplusBarEl.className = 'absolute bottom-0 left-0 right-0 h-1 bg-rose-500';
+          surplusLabelEl.innerText = 'عجز في سيولة الدخل';
+          surplusPercentEl.innerText = `تجاوز الدخل بمقدار: ${Math.abs(netCashSurplus).toLocaleString()} ر.س`;
+        }
+      }
+
+      const kpiDebt = document.getElementById('kpiDebtAmount');
+      if (kpiDebt) kpiDebt.innerText = debtExpenses.toLocaleString('en-US');
+
+      const debtCountBadge = document.getElementById('debtCountBadge');
+      const debtCount = allExpenses.filter(e => e.fundingSource && e.fundingSource.includes('دين')).length;
+      if (debtCountBadge) debtCountBadge.innerText = `${debtCount} ذمة`;
+
+      const debtAlertBanner = document.getElementById('debtAlertBanner');
+      const debtAlertDesc = document.getElementById('debtAlertDescription');
+      if (debtAlertBanner && debtAlertDesc) {
+        if (debtExpenses > 0) {
+          debtAlertBanner.classList.remove('hidden');
+          debtAlertDesc.innerHTML = `لديك مديونية مستحقة بقيمة <strong>${debtExpenses.toLocaleString()} ريال</strong> (على البطاقات الائتمانية أو السلف) نشأت بسبب صرف يتجاوز السيولة. يجب جدولتها في ميزانية الشهر القادم.`;
+        } else {
+          debtAlertBanner.classList.add('hidden');
+        }
+      }
+
+      const smartInsEl = document.getElementById('smartInsightsText');
+      if (smartInsEl) smartInsEl.innerText = forecast.trendMessage;
+
+      const trendBadge = document.getElementById('trendIndicatorBadge');
+      if (trendBadge) {
+        trendBadge.innerText = forecast.trendStatus;
+        if (forecast.trendStatus.includes('حذر')) {
+          trendBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300';
+        } else {
+          trendBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300';
+        }
+      }
+
+      const predBasis = document.getElementById('predictionBasis');
+      if (predBasis) predBasis.innerText = `مبني على تحليل ${forecast.analyzedMonthsCount} شهور سابقة`;
+
+      renderMonthDropdown();
+      updateCalendarBtnUI();
+      renderBudgetRule(activeMonth, totalIncome, debtExpenses);
+      renderForecastTable(forecast);
+      renderExpensesTable(allExpenses);
+      renderCharts(forecast);
+      renderAdminUsersTable();
+    }
+
+    function renderMonthDropdown() {
+      const select = document.getElementById('monthSelector');
+      if (!select) return;
+      select.innerHTML = '';
+      const user = getActiveUserData();
+      const sortedKeys = Object.keys(user.months).sort();
+
+      sortedKeys.forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = user.months[key].name || key;
+        if (key === currentMonthKey) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+    }
+
+    function changeSelectedMonth(newMonthKey) {
+      currentMonthKey = newMonthKey;
+      renderApp();
+      const user = getActiveUserData();
+      showToast(`تم الانتقال إلى: ${user.months[newMonthKey]?.name || newMonthKey}`, 'info');
+    }
+
+    function renderBudgetRule(activeMonth, totalIncome, debtExpenses) {
+      if (totalIncome <= 0) return;
+
+      const needsCategories = ['ثابت والتزامات', 'معيشة وبقالة', 'نقل ومحروقات', 'فواتير واشتراكات', 'صحة وعلاج', 'سداد ديون وبطاقات'];
+      const wantsCategories = ['مطاعم وكافيهات', 'تسوق ورفاهية', 'أخرى'];
+      const savingsCategories = ['ادخار واستثمار'];
+
+      let needsSpent = debtExpenses;
+      let wantsSpent = 0;
+      let savingsSpent = 0;
+
+      (activeMonth.expenses || []).forEach(e => {
+        const val = Number(e.amount);
+        if (needsCategories.includes(e.category)) needsSpent += val;
+        else if (wantsCategories.includes(e.category)) wantsSpent += val;
+        else if (savingsCategories.includes(e.category)) savingsSpent += val;
+      });
+
+      const needsPct = Math.min(100, Math.round((needsSpent / totalIncome) * 100));
+      const wantsPct = Math.min(100, Math.round((wantsSpent / totalIncome) * 100));
+      const savingsPct = Math.min(100, Math.round((savingsSpent / totalIncome) * 100));
+
+      const needsText = document.getElementById('ruleNeedsPercent');
+      const needsBar = document.getElementById('ruleNeedsBar');
+      if (needsText && needsBar) {
+        needsText.innerText = `${needsPct}% (${needsSpent.toLocaleString()} ر.س)`;
+        needsBar.style.width = `${needsPct}%`;
+        needsBar.className = needsPct > 55 ? 'bg-amber-500 h-full rounded-full transition-all duration-500' : 'bg-sky-500 h-full rounded-full transition-all duration-500';
+      }
+
+      const wantsText = document.getElementById('ruleWantsPercent');
+      const wantsBar = document.getElementById('ruleWantsBar');
+      if (wantsText && wantsBar) {
+        wantsText.innerText = `${wantsPct}% (${wantsSpent.toLocaleString()} ر.س)`;
+        wantsBar.style.width = `${wantsPct}%`;
+        wantsBar.className = wantsPct > 35 ? 'bg-rose-500 h-full rounded-full transition-all duration-500' : 'bg-amber-500 h-full rounded-full transition-all duration-500';
+      }
+
+      const savText = document.getElementById('ruleSavingsPercent');
+      const savBar = document.getElementById('ruleSavingsBar');
+      if (savText && savBar) {
+        savText.innerText = `${savingsPct}% (${savingsSpent.toLocaleString()} ر.س)`;
+        savBar.style.width = `${savingsPct}%`;
+      }
+    }
+
+    function renderForecastTable(forecast) {
+      const tbody = document.getElementById('forecastTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const cats = Object.keys(forecast.categoryForecasts);
+      cats.forEach(cat => {
+        const item = forecast.categoryForecasts[cat];
+        if (item.amount <= 0 && cat !== 'سداد ديون وبطاقات') return;
+
+        const tr = document.createElement('tr');
+        tr.className = cat === 'سداد ديون وبطاقات' && item.amount > 0 ? 'bg-amber-500/10 hover:bg-amber-500/20 transition font-bold' : 'hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="py-2.5 font-medium ${cat === 'سداد ديون وبطاقات' ? 'text-amber-300' : 'text-slate-200'}">
+            ${cat === 'سداد ديون وبطاقات' ? '<i class="fa-solid fa-credit-card text-amber-400 ml-1"></i> ' : ''}${cat}
+          </td>
+          <td class="py-2.5 text-slate-400 text-[11px]">${item.method}</td>
+          <td class="py-2.5 text-left font-bold font-mono ${cat === 'سداد ديون وبطاقات' && item.amount > 0 ? 'text-amber-400 text-sm' : 'text-slate-100'}">
+            ${item.amount.toLocaleString()} ر.س
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const totalEl = document.getElementById('forecastTableTotal');
+      if (totalEl) totalEl.innerText = `${forecast.totalForecast.toLocaleString()} ريال`;
+    }
+
+    function renderExpensesTable(expenses) {
+      const tbody = document.getElementById('expensesTableBody');
+      const emptyMsg = document.getElementById('emptyExpenseMessage');
+      if (!tbody || !emptyMsg) return;
+
+      const searchInput = document.getElementById('expenseSearchInput');
+      const catFilterEl = document.getElementById('expenseCategoryFilter');
+
+      const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+      const catFilter = catFilterEl ? catFilterEl.value : 'ALL';
+
+      tbody.innerHTML = '';
+
+      const filtered = (expenses || []).filter(e => {
+        const matchesCategory = catFilter === 'ALL' || e.category === catFilter;
+        const matchesSearch = !searchVal || 
+          (e.description && e.description.toLowerCase().includes(searchVal)) || 
+          (e.amount.toString().includes(searchVal)) ||
+          (e.fundingSource && e.fundingSource.toLowerCase().includes(searchVal));
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      filtered.forEach(exp => {
+        const isDebt = exp.fundingSource && exp.fundingSource.includes('دين');
+        const isSavingsWithdraw = exp.fundingSource === 'السحب من صندوق الادخار' || exp.category === 'سحب من الادخار';
+        const tr = document.createElement('tr');
+        tr.className = isDebt ? 'bg-amber-950/20 hover:bg-amber-900/30 transition border-b border-slate-800/80' : isSavingsWithdraw ? 'bg-cyan-950/20 hover:bg-cyan-900/30 transition border-b border-slate-800/80' : 'hover:bg-slate-800/50 transition border-b border-slate-800/60';
+        
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono text-xs whitespace-nowrap text-slate-300">
+            ${formatDateDisplay(exp.date)}
+          </td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${getCategoryBadgeStyle(exp.category)}">
+              ${exp.category}
+            </span>
+          </td>
+          <td class="py-3 px-4 font-medium text-slate-200">
+            ${exp.description || '-'}
+          </td>
+          <td class="py-3 px-4 font-black font-mono whitespace-nowrap ${isDebt ? 'text-amber-400' : isSavingsWithdraw ? 'text-cyan-400' : 'text-white'}">
+            ${Number(exp.amount).toLocaleString()} ر.س
+          </td>
+          <td class="py-3 px-4 text-xs whitespace-nowrap">
+            ${isDebt 
+              ? `<span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 inline-flex items-center gap-1">
+                  <i class="fa-solid fa-credit-card"></i> ${exp.fundingSource}
+                </span>`
+              : isSavingsWithdraw
+              ? `<span class="px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 inline-flex items-center gap-1">
+                  <i class="fa-solid fa-piggy-bank"></i> سحب من الادخار
+                </span>`
+              : `<span class="text-slate-300 inline-flex items-center gap-1">
+                  <i class="fa-solid fa-wallet text-emerald-400"></i> ${exp.fundingSource || 'الدخل المتاح'}
+                </span>`
+            }
+          </td>
+          <td class="py-3 px-4 text-center">
+            ${exp.isOutlier 
+              ? `<span title="مستبعد من معادلة التنبؤ" class="px-2 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold cursor-help"><i class="fa-solid fa-triangle-exclamation ml-1"></i>طارئ</span>`
+              : `<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">دوري</span>`
+            }
+          </td>
+          <td class="py-3 px-4 text-center whitespace-nowrap">
+            <div class="inline-flex items-center gap-1">
+              <button onclick="openEditExpenseModal('${exp.id}')" title="تعديل العملية" class="w-7 h-7 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition inline-flex items-center justify-center">
+                <i class="fa-regular fa-pen-to-square text-xs"></i>
+              </button>
+              <button onclick="deleteExpense('${exp.id}')" title="حذف العملية" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition inline-flex items-center justify-center">
+                <i class="fa-regular fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getCategoryBadgeStyle(cat) {
+      switch (cat) {
+        case 'ثابت والتزامات': return 'bg-blue-500/15 text-blue-300 border border-blue-500/20';
+        case 'معيشة وبقالة': return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20';
+        case 'نقل ومحروقات': return 'bg-amber-500/15 text-amber-300 border border-amber-500/20';
+        case 'فواتير واشتراكات': return 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/20';
+        case 'مطاعم وكافيهات': return 'bg-rose-500/15 text-rose-300 border border-rose-500/20';
+        case 'تسوق ورفاهية': return 'bg-purple-500/15 text-purple-300 border border-purple-500/20';
+        case 'صحة وعلاج': return 'bg-red-500/15 text-red-300 border border-red-500/20';
+        case 'ادخار واستثمار': return 'bg-brand-500/20 text-brand-300 border border-brand-500/30 font-bold';
+        case 'سحب من الادخار': return 'bg-cyan-500/25 text-cyan-200 border border-cyan-500/40 font-bold';
+        case 'سداد ديون وبطاقات': return 'bg-amber-500/25 text-amber-200 border border-amber-500/40 font-bold';
+        default: return 'bg-slate-800 text-slate-300';
+      }
+    }
+
+    function filterExpensesTable() {
+      const user = getActiveUserData();
+      const activeMonth = user.months[currentMonthKey];
+      if (activeMonth) {
+        renderExpensesTable(activeMonth.expenses);
+      }
+    }
+
+    function renderCharts(forecast) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+      const trendCanvas = document.getElementById('trendChart');
+      if (!trendCanvas) return;
+      const trendCtx = trendCanvas.getContext('2d');
+      const user = getActiveUserData();
+      const sortedKeys = Object.keys(user.months).sort();
+
+      const labels = sortedKeys.map(k => user.months[k].name || k);
+      labels.push('توقع الشهر القادم');
+
+      const actualCashData = sortedKeys.map(k => {
+        const m = user.months[k];
+        return (m.expenses || [])
+          .filter(e => !e.fundingSource || e.fundingSource === 'الدخل الشهري المتاح')
+          .reduce((s, e) => s + Number(e.amount), 0);
+      });
+      actualCashData.push(null);
+
+      const actualSavingsSpentData = sortedKeys.map(k => {
+        const m = user.months[k];
+        return (m.expenses || [])
+          .filter(e => e.fundingSource === 'السحب من صندوق الادخار' || e.category === 'سحب من الادخار')
+          .reduce((s, e) => s + Number(e.amount), 0);
+      });
+      actualSavingsSpentData.push(null);
+
+      const actualDebtData = sortedKeys.map(k => {
+        const m = user.months[k];
+        return (m.expenses || [])
+          .filter(e => e.fundingSource && e.fundingSource.includes('دين'))
+          .reduce((s, e) => s + Number(e.amount), 0);
+      });
+      actualDebtData.push(null);
+
+      const forecastData = sortedKeys.map(() => null);
+      forecastData.push(forecast.totalForecast);
+
+      if (trendChartInstance) trendChartInstance.destroy();
+
+      trendChartInstance = new Chart(trendCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'صرف من الدخل (ريال)',
+              data: actualCashData,
+              backgroundColor: '#6366f1',
+              borderRadius: 6,
+              borderSkipped: false
+            },
+            {
+              label: 'سحب من صندوق الادخار (ريال)',
+              data: actualSavingsSpentData,
+              backgroundColor: '#22d3ee',
+              borderRadius: 6,
+              borderSkipped: false
+            },
+            {
+              label: 'ديون وبطاقات ائتمانية (ريال)',
+              data: actualDebtData,
+              backgroundColor: '#f59e0b',
+              borderRadius: 6,
+              borderSkipped: false
+            },
+            {
+              label: 'المصروف والالتزام المتوقع (ريال)',
+              data: forecastData,
+              backgroundColor: '#10b981',
+              borderRadius: 6,
+              borderSkipped: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw ? context.raw.toLocaleString() + ' ريال' : ''}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { family: 'Cairo' } }
+            },
+            y: {
+              stacked: true,
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { family: 'Cairo' } }
+            }
+          }
+        }
+      });
+
+      const catCanvas = document.getElementById('categoriesChart');
+      if (!catCanvas) return;
+      const catCtx = catCanvas.getContext('2d');
+      const activeMonth = user.months[currentMonthKey];
+      const categoryTotals = {};
+
+      (activeMonth.expenses || []).forEach(e => {
+        categoryTotals[e.category] = (categoryTotals[e.category] || 0) + Number(e.amount);
+      });
+
+      const catLabels = Object.keys(categoryTotals);
+      const catValues = Object.values(categoryTotals);
+
+      let topCat = '-';
+      let maxVal = 0;
+      catLabels.forEach((c, i) => {
+        if (catValues[i] > maxVal) {
+          maxVal = catValues[i];
+          topCat = `${c} (${maxVal.toLocaleString()} ر.س)`;
+        }
+      });
+      const topCatName = document.getElementById('topCategoryName');
+      if (topCatName) topCatName.innerText = topCat;
+
+      if (categoriesChartInstance) categoriesChartInstance.destroy();
+
+      categoriesChartInstance = new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+          labels: catLabels.length ? catLabels : ['لا توجد مصاريف'],
+          datasets: [{
+            data: catValues.length ? catValues : [1],
+            backgroundColor: [
+              '#3b82f6', '#10b981', '#f59e0b', '#06b6d4', 
+              '#f43f5e', '#a855f7', '#ef4444', '#14b8a6', '#eab308', '#64748b'
+            ],
+            borderWidth: 2,
+            borderColor: isDark ? '#0a0e17' : '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                boxWidth: 10,
+                padding: 10,
+                font: { family: 'Cairo', size: 10 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        if (id === 'addExpenseModal') {
+          const dateInput = document.getElementById('expDate');
+          if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+          }
+          checkFundingSourceSuggestion();
+        }
+      }
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function openAddExpenseModal() {
+      currentEditingExpenseId = null;
+      const form = document.getElementById('addExpenseForm');
+      if (form) form.reset();
+
+      const titleEl = document.getElementById('expenseModalTitle');
+      const iconEl = document.getElementById('expenseModalIcon');
+      const btnEl = document.getElementById('saveExpenseSubmitBtn');
+      const dateEl = document.getElementById('expDate');
+      const splitCheck = document.getElementById('enableSplitCheckbox');
+
+      if (titleEl) titleEl.innerText = 'تسجيل مصروف جديد';
+      if (iconEl) iconEl.className = 'fa-solid fa-cart-plus text-brand-400';
+      if (btnEl) btnEl.innerHTML = '<i class="fa-solid fa-check"></i> حفظ العملية';
+      if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+      if (splitCheck) splitCheck.checked = true;
+
+      checkFundingSourceSuggestion();
+      openModal('addExpenseModal');
+    }
+
+    function openEditExpenseModal(expenseId) {
+      const user = getActiveUserData();
+      const activeMonth = user.months[currentMonthKey];
+      if (!activeMonth) return;
+
+      const exp = (activeMonth.expenses || []).find(e => e.id === expenseId);
+      if (!exp) return;
+
+      currentEditingExpenseId = expenseId;
+
+      const titleEl = document.getElementById('expenseModalTitle');
+      const iconEl = document.getElementById('expenseModalIcon');
+      const btnEl = document.getElementById('saveExpenseSubmitBtn');
+
+      if (titleEl) titleEl.innerText = 'تعديل المصروف';
+      if (iconEl) iconEl.className = 'fa-solid fa-pen-to-square text-amber-400';
+      if (btnEl) btnEl.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ التعديل';
+
+      const expAmount = document.getElementById('expAmount');
+      const expCategory = document.getElementById('expCategory');
+      const expDesc = document.getElementById('expDescription');
+      const expDate = document.getElementById('expDate');
+      const expFunding = document.getElementById('expFundingSource');
+      const expOutlier = document.getElementById('expIsOutlier');
+      const splitCheck = document.getElementById('enableSplitCheckbox');
+
+      if (expAmount) expAmount.value = exp.amount;
+      if (expCategory) expCategory.value = exp.category;
+      if (expDesc) expDesc.value = exp.description || '';
+      if (expDate) expDate.value = exp.date;
+      if (expFunding) expFunding.value = exp.fundingSource || 'الدخل الشهري المتاح';
+      if (expOutlier) expOutlier.checked = !!exp.isOutlier;
+      if (splitCheck) splitCheck.checked = false;
+
+      checkFundingSourceSuggestion();
+      openModal('addExpenseModal');
+    }
+
+    function handleSaveExpense(event) {
+      event.preventDefault();
+      
+      const totalAmount = parseFloat(document.getElementById('expAmount')?.value);
+      if (isNaN(totalAmount) || totalAmount <= 0) {
+        showToast('يرجى إدخال مبلغ صحيح أكبر من صفر', 'error');
+        return;
+      }
+
+      const category = document.getElementById('expCategory')?.value || 'أخرى';
+      const description = document.getElementById('expDescription')?.value.trim() || category;
+      const date = document.getElementById('expDate')?.value || new Date().toISOString().split('T')[0];
+      let fundingSource = document.getElementById('expFundingSource')?.value || 'الدخل الشهري المتاح';
+      const isOutlier = !!document.getElementById('expIsOutlier')?.checked;
+      const isSplitEnabled = !!document.getElementById('enableSplitCheckbox')?.checked;
+
+      const availableCashLiquidity = getAvailableCashLiquidity(currentMonthKey);
+      const user = getActiveUserData();
+
+      if (!user.months[currentMonthKey]) {
+        user.months[currentMonthKey] = { name: currentMonthKey, extraIncomes: [], expenses: [] };
+      }
+
+      if (currentEditingExpenseId) {
+        const expIndex = user.months[currentMonthKey].expenses.findIndex(e => e.id === currentEditingExpenseId);
+        if (expIndex !== -1) {
+          user.months[currentMonthKey].expenses[expIndex] = {
+            id: currentEditingExpenseId,
+            date,
+            category,
+            description,
+            amount: totalAmount,
+            fundingSource,
+            isOutlier
+          };
+          saveSystemDatabase();
+          renderApp();
+          closeModal('addExpenseModal');
+          currentEditingExpenseId = null;
+          showToast('تم تحديث بيانات المصروف بنجاح!', 'success');
+          return;
+        }
+      }
+
+      if (fundingSource === 'الدخل الشهري المتاح' && totalAmount > availableCashLiquidity && availableCashLiquidity > 0 && isSplitEnabled) {
+        const cashPart = availableCashLiquidity;
+        const debtPart = totalAmount - availableCashLiquidity;
+
+        const expensePart1 = {
+          id: 'exp_' + Date.now() + '_cash',
+          date,
+          category,
+          description: `${description} (مدفوع من الدخل المتبقي)`,
+          amount: cashPart,
+          fundingSource: 'الدخل الشهري المتاح',
+          isOutlier
+        };
+
+        const expensePart2 = {
+          id: 'exp_' + Date.now() + '_debt',
+          date,
+          category,
+          description: `${description} (فائض المصروف - دين بطاقة ائتمانية)`,
+          amount: debtPart,
+          fundingSource: 'بطاقة ائتمانية (دين)',
+          isOutlier
+        };
+
+        user.months[currentMonthKey].expenses.push(expensePart1, expensePart2);
+        saveSystemDatabase();
+        renderApp();
+        closeModal('addExpenseModal');
+
+        showToast(`تمت تجزئة المصروف بنجاح: (${cashPart.toLocaleString()} ر.س من الدخل) + (${debtPart.toLocaleString()} ر.س دين بطاقة)`, 'info');
+        return;
+      }
+
+      const newExpense = {
+        id: 'exp_' + Date.now(),
+        date,
+        category,
+        description,
+        amount: totalAmount,
+        fundingSource,
+        isOutlier
+      };
+
+      user.months[currentMonthKey].expenses.push(newExpense);
+      saveSystemDatabase();
+      renderApp();
+
+      closeModal('addExpenseModal');
+      const form = document.getElementById('addExpenseForm');
+      if (form) form.reset();
+
+      if (fundingSource === 'السحب من صندوق الادخار') {
+        showToast(`تم الصرف بنجاح من صندوق الادخار التراكمي دون تسجيل أي ديون!`, 'success');
+      } else if (category === 'ادخار واستثمار') {
+        showToast(`تم تحويل (${totalAmount.toLocaleString()} ر.س) بنجاح وتغذية صندوق الادخار التراكمي!`, 'success');
+      } else if (fundingSource.includes('دين')) {
+        showToast(`تم تسجيل المصروف وترصيده كـ (${fundingSource}) لسداده لاحقاً!`, 'info');
+      } else {
+        showToast('تم حفظ العملية وتحديث مؤشرات السيولة بنجاح!', 'success');
+      }
+    }
+
+    function deleteExpense(expenseId) {
+      showCustomConfirm('حذف العملية', 'هل أنت متأكد من حذف هذه العملية؟ سيتم إعادة احتساب الديون والادخار والسيولة فورياً.', (confirmed) => {
+        if (!confirmed) return;
+        const user = getActiveUserData();
+        const activeMonth = user.months[currentMonthKey];
+        if (activeMonth) {
+          activeMonth.expenses = activeMonth.expenses.filter(e => e.id !== expenseId);
+          saveSystemDatabase();
+          renderApp();
+          showToast('تم حذف العملية بنجاح وتحديث النظام.', 'info');
+        }
+      });
+    }
+
+    function openAddIncomeModal() {
+      const form = document.getElementById('addIncomeForm');
+      if (form) form.reset();
+      openModal('addIncomeModal');
+    }
+
+    function handleSaveExtraIncome(event) {
+      event.preventDefault();
+      const amount = parseFloat(document.getElementById('extraIncomeAmount')?.value);
+      const source = document.getElementById('extraIncomeSource')?.value.trim();
+
+      if (isNaN(amount) || amount <= 0 || !source) {
+        showToast('يرجى إدخال مبلغ ومصدر صالحين', 'error');
+        return;
+      }
+
+      const newIncome = {
+        id: 'inc_' + Date.now(),
+        amount,
+        source
+      };
+
+      const user = getActiveUserData();
+      if (!user.months[currentMonthKey]) {
+        user.months[currentMonthKey] = { name: currentMonthKey, extraIncomes: [], expenses: [] };
+      }
+
+      user.months[currentMonthKey].extraIncomes.push(newIncome);
+      saveSystemDatabase();
+      renderApp();
+
+      closeModal('addIncomeModal');
+      showToast(`تمت إضافة دخل إضافي (${amount.toLocaleString()} ريال) للشهر!`, 'success');
+    }
+
+    function switchSettingsTab(tab) {
+      const tabBtnProfile = document.getElementById('tabBtnProfile');
+      const tabBtnAdminUsers = document.getElementById('tabBtnAdminUsers');
+      const tabProfile = document.getElementById('settingsTabProfile');
+      const tabUsers = document.getElementById('settingsTabUsers');
+
+      if (tabBtnProfile) {
+        tabBtnProfile.className = tab === 'profile' 
+          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5' 
+          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5';
+      }
+      if (tabBtnAdminUsers) {
+        tabBtnAdminUsers.className = tab === 'users' 
+          ? 'py-2 px-3 border-b-2 border-brand-500 text-brand-400 flex items-center gap-1.5' 
+          : 'py-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-white flex items-center gap-1.5';
+      }
+
+      if (tabProfile) tabProfile.classList.toggle('hidden', tab !== 'profile');
+      if (tabUsers) tabUsers.classList.toggle('hidden', tab !== 'users');
+    }
+
+    function openSettingsModal() {
+      const user = getActiveUserData();
+
+      const nameEl = document.getElementById('settingUserName');
+      const jobEl = document.getElementById('settingJobTitle');
+      const empEl = document.getElementById('settingEmployer');
+      const secEl = document.getElementById('settingSecurityKey');
+      const salEl = document.getElementById('settingBaseSalary');
+      const allEl = document.getElementById('settingAllowanceAmount');
+      const dateEl = document.getElementById('settingAllowanceEffectiveDate');
+      const passEl = document.getElementById('settingLoginPass');
+      const passConfEl = document.getElementById('settingLoginPassConfirm');
+
+      if (nameEl) nameEl.value = user.profile?.name || '';
+      if (jobEl) jobEl.value = user.profile?.jobTitle || '';
+      if (empEl) empEl.value = user.profile?.employer || '';
+      if (secEl) secEl.value = user.profile?.securityKey || '';
+      if (salEl) salEl.value = user.baseSalary || 0;
+      if (allEl) allEl.value = user.salaryAllowance || 0;
+      if (dateEl) dateEl.value = user.allowanceEffectiveDate || '';
+      if (passEl) passEl.value = '';
+      if (passConfEl) passConfEl.value = '';
+
+      switchSettingsTab('profile');
+      openModal('settingsModal');
+    }
+
+    function handleSaveSettings(event) {
+      event.preventDefault();
+
+      const user = getActiveUserData();
+      const name = document.getElementById('settingUserName')?.value.trim();
+      const jobTitle = document.getElementById('settingJobTitle')?.value.trim();
+      const employer = document.getElementById('settingEmployer')?.value.trim();
+      const securityKey = document.getElementById('settingSecurityKey')?.value.trim();
+
+      const baseSalary = parseFloat(document.getElementById('settingBaseSalary')?.value) || 0;
+      const salaryAllowance = parseFloat(document.getElementById('settingAllowanceAmount')?.value) || 0;
+      const allowanceEffectiveDate = document.getElementById('settingAllowanceEffectiveDate')?.value;
+
+      const newPass = document.getElementById('settingLoginPass')?.value.trim();
+      const newPassConfirm = document.getElementById('settingLoginPassConfirm')?.value.trim();
+
+      if (newPass && newPass !== newPassConfirm) {
+        showToast('كلمة المرور وتأكيدها غير متطابقين!', 'error');
+        return;
+      }
+
+      user.profile.name = name;
+      user.profile.jobTitle = jobTitle;
+      user.profile.employer = employer;
+      user.profile.securityKey = securityKey;
+
+      user.baseSalary = baseSalary;
+      user.salaryAllowance = salaryAllowance;
+      user.allowanceEffectiveDate = allowanceEffectiveDate;
+
+      if (newPass) {
+        user.credentials.password = newPass;
+      }
+
+      saveSystemDatabase();
+      renderApp();
+      closeModal('settingsModal');
+      showToast('تم حفظ كافة الإعدادات والبيانات الشخصية بنجاح!', 'success');
+    }
+
+    function renderAdminUsersTable() {
+      const tbody = document.getElementById('adminUsersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      for (const [uname, udata] of Object.entries(systemDb.users)) {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition border-b border-slate-800/60';
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-bold text-white font-mono">${uname}</td>
+          <td class="py-2.5 px-3 text-slate-200">${udata.profile?.name || '-'}</td>
+          <td class="py-2.5 px-3 font-mono text-emerald-400 font-bold">${Number(udata.baseSalary || 0).toLocaleString()} ر.س</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${udata.role === 'admin' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-300'}">
+              ${udata.role === 'admin' ? 'مدير النظام' : 'مستخدم'}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 text-center whitespace-nowrap">
+            <div class="inline-flex items-center gap-1.5">
+              <button type="button" onclick="openAdminEditUserModal('${uname}')" title="تعديل بيانات المستخدم والراتب" class="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-semibold transition flex items-center gap-1">
+                <i class="fa-regular fa-pen-to-square"></i> تعديل
+              </button>
+              <button type="button" onclick="openAdminResetPasswordModal('${uname}')" title="إعادة ضبط كلمة المرور" class="px-2 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-semibold transition flex items-center gap-1">
+                <i class="fa-solid fa-key"></i> رمز السر
+              </button>
+              ${uname !== activeUsername && udata.role !== 'admin' 
+                ? `<button type="button" onclick="deleteUserAccount('${uname}')" title="حذف الحساب نهائياً" class="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold transition flex items-center gap-1">
+                    <i class="fa-regular fa-trash-can"></i> حذف
+                  </button>`
+                : ''
+              }
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function handleCreateNewUser(event) {
+      event.preventDefault();
+      const uname = document.getElementById('newUsername')?.value.trim().toLowerCase();
+      const dname = document.getElementById('newDisplayName')?.value.trim();
+      const pwd = document.getElementById('newPassword')?.value.trim();
+      const salary = parseFloat(document.getElementById('newBaseSalary')?.value) || 0;
+      const secKey = document.getElementById('newSecurityKey')?.value.trim() || '1234';
+
+      if (!uname || !dname || !pwd) {
+        showToast('يرجى ملء جميع الحقول الإلزامية', 'error');
+        return;
+      }
+
+      if (systemDb.users[uname]) {
+        showToast('اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم آخر', 'error');
+        return;
+      }
+
+      const currentYearMonth = currentMonthKey || '2026-09';
+      systemDb.users[uname] = {
+        role: 'member',
+        credentials: { username: uname, password: pwd },
+        profile: { name: dname, jobTitle: 'مستخدم مستقل', employer: '', securityKey: secKey },
+        baseSalary: salary,
+        salaryAllowance: 0,
+        allowanceEffectiveDate: '',
+        months: {
+          [currentYearMonth]: {
+            name: `شهر ${currentYearMonth}`,
+            extraIncomes: [],
+            expenses: []
+          }
+        }
+      };
+
+      saveSystemDatabase();
+      renderAdminUsersTable();
+      const form = document.getElementById('addNewUserForm');
+      if (form) form.reset();
+      showToast(`تم إنشاء حساب مستقل بنجاح للمستخدم: ${dname}`, 'success');
+    }
+
+    function openAdminEditUserModal(targetUname) {
+      const udata = systemDb.users[targetUname];
+      if (!udata) return;
+
+      const origEl = document.getElementById('editUserOriginalUname');
+      const targetEl = document.getElementById('editUserTargetUname');
+      const dispEl = document.getElementById('editUserDisplayName');
+      const jobEl = document.getElementById('editUserJobTitle');
+      const empEl = document.getElementById('editUserEmployer');
+      const salEl = document.getElementById('editUserBaseSalary');
+      const secEl = document.getElementById('editUserSecurityKey');
+
+      if (origEl) origEl.value = targetUname;
+      if (targetEl) targetEl.innerText = `@${targetUname}`;
+      if (dispEl) dispEl.value = udata.profile?.name || '';
+      if (jobEl) jobEl.value = udata.profile?.jobTitle || '';
+      if (empEl) empEl.value = udata.profile?.employer || '';
+      if (salEl) salEl.value = udata.baseSalary || 0;
+      if (secEl) secEl.value = udata.profile?.securityKey || '';
+
+      openModal('adminEditUserModal');
+    }
+
+    function handleSaveAdminEditUser(event) {
+      event.preventDefault();
+      const uname = document.getElementById('editUserOriginalUname')?.value;
+      const udata = systemDb.users[uname];
+      if (!udata) return;
+
+      udata.profile.name = document.getElementById('editUserDisplayName')?.value.trim();
+      udata.profile.jobTitle = document.getElementById('editUserJobTitle')?.value.trim();
+      udata.profile.employer = document.getElementById('editUserEmployer')?.value.trim();
+      udata.baseSalary = parseFloat(document.getElementById('editUserBaseSalary')?.value) || 0;
+      udata.profile.securityKey = document.getElementById('editUserSecurityKey')?.value.trim();
+
+      saveSystemDatabase();
+      closeModal('adminEditUserModal');
+      renderAdminUsersTable();
+      renderApp();
+      showToast(`تم حفظ وتحديث بيانات المستخدم (@${uname}) بنجاح!`, 'success');
+    }
+
+    function openAdminResetPasswordModal(uname) {
+      adminResetTargetUser = uname;
+      const label = document.getElementById('resetTargetUserLabel');
+      const passInput = document.getElementById('adminNewPassInput');
+      if (label) label.innerText = `@${uname} (${systemDb.users[uname]?.profile?.name || uname})`;
+      if (passInput) passInput.value = '';
+      openModal('adminResetPassModal');
+    }
+
+    function confirmAdminResetPassword() {
+      if (!adminResetTargetUser || !systemDb.users[adminResetTargetUser]) return;
+      const newPass = document.getElementById('adminNewPassInput')?.value.trim();
+      if (!newPass) {
+        showToast('يرجى كتابة كلمة مرور جديدة', 'error');
+        return;
+      }
+      systemDb.users[adminResetTargetUser].credentials.password = newPass;
+      saveSystemDatabase();
+      closeModal('adminResetPassModal');
+      showToast(`تم تغيير كلمة المرور للمستخدم (@${adminResetTargetUser}) بنجاح!`, 'success');
+      adminResetTargetUser = null;
+    }
+
+    function deleteUserAccount(targetUname) {
+      if (targetUname === activeUsername) {
+        showToast('لا يمكنك حذف الحساب النشط الحالي الذي قمت بالدخول به.', 'error');
+        return;
+      }
+
+      showCustomConfirm(
+        'حذف حساب مستخدم',
+        `هل أنت متأكد من حذف حساب (${systemDb.users[targetUname]?.profile?.name || targetUname})؟ سيتم حذف جميع مصاريفه وسجلاته بشكل نهائي.`,
+        (confirmed) => {
+          if (!confirmed) return;
+          delete systemDb.users[targetUname];
+          saveSystemDatabase();
+          renderAdminUsersTable();
+          showToast(`تم حذف حساب المستخدم (@${targetUname}) نهائياً من النظام.`, 'info');
+        }
+      );
+    }
+
+    function openSettleDebtModal() {
+      const user = getActiveUserData();
+      const activeMonth = user.months[currentMonthKey];
+      const debtTotal = (activeMonth?.expenses || [])
+        .filter(e => e.fundingSource && e.fundingSource.includes('دين'))
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+
+      const totalEl = document.getElementById('settleModalDebtTotal');
+      const inputEl = document.getElementById('settleAmountInput');
+      if (totalEl) totalEl.innerText = `${debtTotal.toLocaleString()} ريال`;
+      if (inputEl) inputEl.value = debtTotal;
+      openModal('settleDebtModal');
+    }
+
+    function executeSettleDebtNextMonth() {
+      const settleAmount = parseFloat(document.getElementById('settleAmountInput')?.value) || 0;
+      if (settleAmount <= 0) {
+        showToast('يرجى تحديد مبلغ سداد صالح', 'error');
+        return;
+      }
+
+      const user = getActiveUserData();
+      const [yearStr, monthStr] = currentMonthKey.split('-');
+      let y = parseInt(yearStr, 10);
+      let m = parseInt(monthStr, 10) + 1;
+      if (m > 12) {
+        m = 1;
+        y += 1;
+      }
+      const nextMonthKey = `${y}-${String(m).padStart(2, '0')}`;
+
+      const monthNamesAr = ['', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      const nextMonthName = `${monthNamesAr[m]} ${y}`;
+
+      if (!user.months[nextMonthKey]) {
+        user.months[nextMonthKey] = {
+          name: nextMonthName,
+          extraIncomes: [],
+          expenses: []
+        };
+      }
+
+      const settleExpense = {
+        id: 'exp_settle_' + Date.now(),
+        date: `${nextMonthKey}-01`,
+        category: 'سداد ديون وبطاقات',
+        description: `سداد مديونية وبطاقات مرحّلة من شهر (${user.months[currentMonthKey]?.name || currentMonthKey})`,
+        amount: settleAmount,
+        fundingSource: 'الدخل الشهري المتاح',
+        isOutlier: false
+      };
+
+      user.months[nextMonthKey].expenses.push(settleExpense);
+
+      let remainingSettle = settleAmount;
+      (user.months[currentMonthKey]?.expenses || []).forEach(e => {
+        if (e.fundingSource && e.fundingSource.includes('دين') && remainingSettle > 0) {
+          if (e.amount <= remainingSettle) {
+            remainingSettle -= e.amount;
+            e.fundingSource = 'تم ترحيلها للشهر القادم (مجدولة)';
+          }
+        }
+      });
+
+      saveSystemDatabase();
+      closeModal('settleDebtModal');
+      renderApp();
+      showToast(`تم ترحيل وجدولة مبلغ (${settleAmount.toLocaleString()} ر.س) كسداد في ميزانية شهر ${nextMonthName}!`, 'success');
+    }
+
+    function exportDataJson() {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(systemDb, null, 2));
+      const downloadAnchor = document.createElement('a');
+      const dateStr = new Date().toISOString().split('T')[0];
+      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('download', `financial_backup_${activeUsername}_${dateStr}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('تم تحميل ملف النسخة الاحتياطية بنجاح!', 'success');
+    }
+
+    function importDataJson(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && parsed.users) {
+            systemDb = parsed;
+            saveSystemDatabase();
+            if (!systemDb.users[activeUsername]) {
+              activeUsername = Object.keys(systemDb.users)[0];
+              localStorage.setItem(ACTIVE_USER_KEY, activeUsername);
+            }
+            renderApp();
+            showToast('تم استعادة كافة البيانات والشهور بنجاح!', 'success');
+          } else {
+            showToast('ملف النسخة الاحتياطية غير متوافق أو تالف.', 'error');
+          }
+        } catch (err) {
+          showToast('حدث خطأ أثناء قراءة ملف النسخة الاحتياطية.', 'error');
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function promptSafeResetSystem() {
+      showCustomConfirm(
+        'تصفير آمن مع نسخة إجبارية',
+        'سيقوم النظام تلقائياً بتحميل نسخة احتياطية كاملة على جهازك أولاً، ثم مسح كافة العمليات وتصفير الشهور للبدء من جديد. هل أنت متأكد؟',
+        (confirmed) => {
+          if (!confirmed) return;
+          exportDataJson();
+
+          const user = getActiveUserData();
+          const currentYearMonth = currentMonthKey || '2026-09';
+          user.months = {
+            [currentYearMonth]: {
+              name: `شهر ${currentYearMonth}`,
+              extraIncomes: [],
+              expenses: []
+            }
+          };
+
+          saveSystemDatabase();
+          renderApp();
+          showToast('تم حفظ نسخة احتياطية إجبارية وتصفير النظام بأمان تام!', 'success');
+        }
+      );
+    }
+
+    function showCustomConfirm(title, message, callback) {
+      const titleEl = document.getElementById('confirmTitle');
+      const msgEl = document.getElementById('confirmMessage');
+      if (titleEl) titleEl.innerText = title;
+      if (msgEl) msgEl.innerText = message;
+      confirmCallback = callback;
+      const modal = document.getElementById('confirmActionModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeConfirmModal(result) {
+      const modal = document.getElementById('confirmActionModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      if (typeof confirmCallback === 'function') {
+        confirmCallback(result);
+        confirmCallback = null;
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const msgEl = document.getElementById('toastMessage');
+      const iconEl = document.getElementById('toastIcon');
+
+      if (!toast || !msgEl || !iconEl) return;
+
+      msgEl.innerText = message;
+      if (type === 'success') {
+        iconEl.innerHTML = '<i class="fa-solid fa-circle-check text-brand-400"></i>';
+      } else if (type === 'error') {
+        iconEl.innerHTML = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>';
+      } else {
+        iconEl.innerHTML = '<i class="fa-solid fa-circle-info text-sky-400"></i>';
+      }
+
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 4000);
+    }
+
+    window.onload = function() {
+      initTheme();
+      checkAuthOnLoad();
+      renderApp();
+    };
+  </script>
+</body>
+</html>
