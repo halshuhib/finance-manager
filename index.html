@@ -247,7 +247,7 @@
               <span class="text-xs px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300">مطلوب سدادها</span>
               <h4 class="font-bold text-white text-sm">تنبيه تمويل عجز الصرف: ديون مسجلة على البطاقات والسلف</h4>
             </div>
-            <p id="debtAlertMsg" class="text-xs text-slate-300 mt-0.5">لديك مديونية مستحقة نشأت بسبب تجاوز السيولة. يجب جدولتها في ميزانية الشهر القادم.</p>
+            <p id="debtAlertMsg" class="text-xs text-slate-300 mt-0.5">لديك مديونية مستحقة نشأت بسبب تجاوز السيولة.</p>
           </div>
         </div>
         <button onclick="openSettleDebtModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
@@ -449,6 +449,7 @@
               <option value="ثابت والتزامات">ثابت والتزامات (إيجار، قسط، صيانة)</option>
               <option value="فواتير واشتراكات">فواتير واشتراكات (كهرباء، ماء، اتصالات)</option>
               <option value="نقل ومحروقات">نقل ومحروقات (بنزين، صيانة سيارة)</option>
+              <option value="سداد ديون وبطاقات">سداد ديون وبطاقات</option>
               <option value="تسوق ورفاهية">تسوق ورفاهية (ملابس، إلكترونيات)</option>
               <option value="مطاعم وكافيهات">مطاعم وكافيهات</option>
               <option value="صحة وطب">صحة وطب (أدوية، علاج)</option>
@@ -651,7 +652,7 @@
                   <input type="month" id="setAllowanceEffectiveMonth" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" />
                 </div>
               </div>
-              <p class="text-[11px] text-slate-400">تُحتسب العلاوة تلقائياً فقط ابتداءً من شهر سريانها فصاعداً، ولا تؤثر على الشهور السابقة.</p>
+              <p class="text-[11px] text-slate-400">تُحتسب العلاوة تلقائياً فقط ابتداءً من شهر سريانها فصاعداً.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -722,7 +723,7 @@
         </div>
 
         <!-- Tab 3: Backup & Safe Reset -->
-        <div id="tabBackup" class="space-y-4">
+        <div id="tabBackup" class="hidden space-y-4">
           <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 space-y-3">
             <h4 class="font-bold text-white text-xs">النسخ الاحتياطي اليدوي والاستعادة</h4>
             <div class="flex flex-wrap gap-2 pt-1">
@@ -733,7 +734,7 @@
               <label class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-upload"></i>
                 <span>استعادة نسخة من ملف</span>
-                <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
+                <input type="file" id="backupFileInput" accept=".json" onchange="importDataJson(event)" class="hidden" />
               </label>
             </div>
           </div>
@@ -743,7 +744,7 @@
               <i class="fa-solid fa-triangle-exclamation"></i>
               <span>تصفير البيانات الآمن</span>
             </h4>
-            <p class="text-slate-300">يقوم النظام تلقائياً بتنزيل نسخة احتياطية إجبارية على جهازك أولاً لحماية بياناتك قبل تفريغ العمليات:</p>
+            <p class="text-slate-300">يقوم النظام بتنزيل نسخة احتياطية إجبارية على جهازك أولاً قبل تفريغ العمليات:</p>
             <button onclick="promptSafeResetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold transition">
               تصفير آمن مع تحميل نسخة إجبارية
             </button>
@@ -806,9 +807,6 @@
 
   <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
   <script>
-    // -------------------------------------------------------------
-    // 1. Direct Cloud Integration
-    // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyAtCIZSXO0JoZXpDKtwuKW0a6ybJMmXDSo",
       authDomain: "hussein-finance.firebaseapp.com",
@@ -831,9 +829,6 @@
       console.warn("Firebase Init Error:", e);
     }
 
-    // -------------------------------------------------------------
-    // 2. Default Initial Production State
-    // -------------------------------------------------------------
     const getTodayIsoMonth = () => {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -872,32 +867,104 @@
     let trendChartInstance = null;
     let categoryChartInstance = null;
 
-    function normalizeUserData(uObj, fallbackKey) {
-      if (!uObj) return null;
-      const uname = (uObj.username || (uObj.credentials && uObj.credentials.username) || fallbackKey).toLowerCase();
-      const pass = uObj.password || (uObj.credentials && uObj.credentials.password) || "Hh@537573";
-      const sKey = uObj.securityKey || uObj.recoveryKey || "5375";
-      const bSal = parseFloat(uObj.baseSalary) || 18652.30;
+    // Adapts various backup formats to the application model
+    function normalizeStateStructure(rawState) {
+      if (!rawState || typeof rawState !== 'object') return null;
 
-      return {
-        username: uname,
-        password: pass,
-        displayName: uObj.displayName || "حسين يوسف الشهيب",
-        jobTitle: uObj.jobTitle || "محلل ومصمم نظم",
-        employer: uObj.employer || "إمارة المنطقة الشرقية",
-        role: uObj.role || "admin",
-        securityKey: sKey,
-        baseSalary: bSal,
-        allowance: parseFloat(uObj.allowance) || 0,
-        allowanceEffectiveMonth: uObj.allowanceEffectiveMonth || uObj.allowanceEffectiveDate || ""
+      const normalized = {
+        users: {},
+        currentUsername: rawState.currentUsername || "halshuhiyb",
+        preferences: rawState.preferences || { theme: "dark", calendar: "gregorian" },
+        userFinancials: {}
       };
+
+      const sourceUsers = rawState.users || {};
+      for (const [k, u] of Object.entries(sourceUsers)) {
+        const uKey = (u.username || (u.credentials && u.credentials.username) || k).toLowerCase();
+        
+        // Parse User profile
+        normalized.users[uKey] = {
+          username: uKey,
+          password: u.password || (u.credentials && u.credentials.password) || "123456",
+          displayName: (u.profile && u.profile.name) || u.displayName || (uKey === "halshuhiyb" ? "حسين يوسف الشهيب" : uKey),
+          jobTitle: (u.profile && u.profile.jobTitle) || u.jobTitle || "",
+          employer: (u.profile && u.profile.employer) || u.employer || "",
+          role: u.role || (uKey === "halshuhiyb" ? "admin" : "user"),
+          securityKey: (u.profile && u.profile.securityKey) || u.securityKey || "5375",
+          baseSalary: parseFloat(u.baseSalary) || 0,
+          allowance: parseFloat(u.salaryAllowance || u.allowance) || 0,
+          allowanceEffectiveMonth: u.allowanceEffectiveDate || u.allowanceEffectiveMonth || ""
+        };
+
+        // Parse Financials
+        let userSavings = 0;
+        let userMonths = {};
+
+        if (rawState.userFinancials && rawState.userFinancials[uKey]) {
+          userSavings = parseFloat(rawState.userFinancials[uKey].savingsBox) || 0;
+          userMonths = rawState.userFinancials[uKey].months || {};
+        } else if (u.months) {
+          userMonths = u.months;
+        }
+
+        // Clean & Normalize Months
+        const cleanMonths = {};
+        for (const [mKey, mVal] of Object.entries(userMonths)) {
+          const rawExpenses = mVal.expenses || [];
+          const cleanExpenses = rawExpenses.map(exp => {
+            let fSource = "income";
+            const s = (exp.fundingSource || "").toLowerCase();
+            if (s.includes("بطاقة") || s.includes("credit")) fSource = "credit_card";
+            else if (s.includes("سلفة") || s.includes("loan")) fSource = "loan";
+            else if (s.includes("ادخار") || s.includes("saving")) fSource = "savings";
+
+            return {
+              id: exp.id || ('exp_' + Math.random()),
+              amount: parseFloat(exp.amount) || 0,
+              category: exp.category || "أخرى",
+              date: exp.date || `${mKey}-01`,
+              description: exp.description || "",
+              fundingSource: fSource,
+              isEmergency: !!(exp.isEmergency || exp.isOutlier)
+            };
+          });
+
+          const rawExtra = mVal.variableIncomes || mVal.extraIncomes || [];
+          const cleanExtra = rawExtra.map(inc => ({
+            id: inc.id || ('inc_' + Math.random()),
+            amount: parseFloat(inc.amount) || 0,
+            source: inc.source || "دخل إضافي",
+            date: inc.date || `${mKey}-01`
+          }));
+
+          cleanMonths[mKey] = {
+            monthKey: mKey,
+            baseSalary: parseFloat(mVal.baseSalary) || normalized.users[uKey].baseSalary,
+            variableIncomes: cleanExtra,
+            expenses: cleanExpenses,
+            debtSettled: !!mVal.debtSettled
+          };
+        }
+
+        normalized.userFinancials[uKey] = {
+          savingsBox: userSavings,
+          months: cleanMonths
+        };
+      }
+
+      if (!normalized.users["halshuhiyb"]) {
+        normalized.users["halshuhiyb"] = initialDefaultState.users["halshuhiyb"];
+      }
+
+      return normalized;
     }
 
     function loadLocalState() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
-          systemState = JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          systemState = normalizeStateStructure(parsed) || JSON.parse(JSON.stringify(initialDefaultState));
         } catch (e) {
           systemState = JSON.parse(JSON.stringify(initialDefaultState));
         }
@@ -925,14 +992,9 @@
       db.collection("app_data").doc("production_state").onSnapshot((doc) => {
         if (doc.exists) {
           const cloudData = doc.data();
-          if (cloudData && cloudData.users) {
-            // Normalize incoming cloud data
-            const normUsers = {};
-            for (const [k, u] of Object.entries(cloudData.users)) {
-              normUsers[k.toLowerCase()] = normalizeUserData(u, k);
-            }
-            cloudData.users = normUsers;
-            systemState = cloudData;
+          const normalized = normalizeStateStructure(cloudData);
+          if (normalized) {
+            systemState = normalized;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(systemState));
             updateCloudStatusBadge(true);
             if (isLoggedIn()) {
@@ -966,20 +1028,16 @@
       location.reload();
     }
 
-    // -------------------------------------------------------------
-    // 3. User & Session Helpers
-    // -------------------------------------------------------------
     function getCurrentUser() {
-      if (!systemState.currentUsername || !systemState.users[systemState.currentUsername]) {
-        const firstKey = Object.keys(systemState.users)[0] || "halshuhiyb";
-        return systemState.users[firstKey] || initialDefaultState.users["halshuhiyb"];
+      const uname = (systemState.currentUsername || "halshuhiyb").toLowerCase();
+      if (!systemState.users[uname]) {
+        return systemState.users["halshuhiyb"] || initialDefaultState.users["halshuhiyb"];
       }
-      return systemState.users[systemState.currentUsername];
+      return systemState.users[uname];
     }
 
     function getCurrentUserData() {
-      const uname = getCurrentUser().username;
-      if (!systemState.userFinancials) systemState.userFinancials = {};
+      const uname = getCurrentUser().username.toLowerCase();
       if (!systemState.userFinancials[uname]) {
         systemState.userFinancials[uname] = { savingsBox: 0.0, months: {} };
       }
@@ -1010,9 +1068,6 @@
       return localStorage.getItem("FINANCE_LOGGED_IN") === "true";
     }
 
-    // -------------------------------------------------------------
-    // 4. Calculations & Predictive Analytics
-    // -------------------------------------------------------------
     function getMonthSalary(monthKey) {
       const user = getCurrentUser();
       let sal = user.baseSalary || 18652.30;
@@ -1126,9 +1181,6 @@
       };
     }
 
-    // -------------------------------------------------------------
-    // 5. Render Core UI
-    // -------------------------------------------------------------
     function renderApp() {
       const user = getCurrentUser();
       const uData = getCurrentUserData();
@@ -1175,7 +1227,7 @@
       const debtAlertBanner = document.getElementById("debtAlertBanner");
       if (summary.hasDebt) {
         debtAlertBanner.classList.remove("hidden");
-        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال (على البطاقات أو السلف) نشأت بسبب تجاوز السيولة.`;
+        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال نشأت بسبب تجاوز السيولة.`;
       } else {
         debtAlertBanner.classList.add("hidden");
       }
@@ -1220,7 +1272,7 @@
       const list = (mData.expenses || []).slice().reverse();
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد مصروفات مسجلة لهذا الشهر حتى الآن. اضغط على "تسجيل مصروف" للبدء.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد مصروفات مسجلة لهذا الشهر حتى الآن.</td></tr>`;
         return;
       }
 
@@ -1233,15 +1285,16 @@
         if (exp.category.includes("معيشة")) catColor = "bg-emerald-500/20 text-emerald-300";
         else if (exp.category.includes("ثابت")) catColor = "bg-blue-500/20 text-blue-300";
         else if (exp.category.includes("فواتير")) catColor = "bg-cyan-500/20 text-cyan-300";
-        else if (exp.category.includes("نقل")) catColor = "bg-amber-500/20 text-amber-300";
+        else if (exp.category.includes("ديون") || exp.category.includes("بطاقات")) catColor = "bg-amber-500/20 text-amber-300";
+        else if (exp.category.includes("نقل")) catColor = "bg-indigo-500/20 text-indigo-300";
         else if (exp.category.includes("مطاعم")) catColor = "bg-rose-500/20 text-rose-300";
         else if (exp.category.includes("ادخار")) catColor = "bg-teal-500/20 text-teal-300";
 
-        let fundLabel = `<span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-wallet"></i> الدخل الشهري المتاح</span>`;
+        let fundLabel = `<span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-wallet"></i> الدخل المتاح</span>`;
         if (exp.fundingSource === "credit_card") {
           fundLabel = `<span class="text-amber-400 font-bold flex items-center gap-1"><i class="fa-solid fa-credit-card"></i> بطاقة ائتمانية (دين)</span>`;
         } else if (exp.fundingSource === "loan") {
-          fundLabel = `<span class="text-amber-300 font-bold flex items-center gap-1"><i class="fa-solid fa-hand-holding-dollar"></i> سلفة شخصية (دين)</span>`;
+          fundLabel = `<span class="text-amber-300 font-bold flex items-center gap-1"><i class="fa-solid fa-hand-holding-dollar"></i> سلفة شخصية</span>`;
         } else if (exp.fundingSource === "savings") {
           fundLabel = `<span class="text-cyan-400 flex items-center gap-1"><i class="fa-solid fa-piggy-bank"></i> صندوق الادخار</span>`;
         }
@@ -1252,7 +1305,7 @@
           <td class="p-3.5 text-white font-medium">${exp.description || '-'}</td>
           <td class="p-3.5 font-bold text-white whitespace-nowrap">${formatMoney(exp.amount)} <span class="text-[10px] text-slate-400">ر.س</span></td>
           <td class="p-3.5">${fundLabel}</td>
-          <td class="p-3.5">${exp.isEmergency ? '<span class="text-rose-400 text-[10px] font-bold bg-rose-500/10 px-2 py-0.5 rounded">طارئ</span>' : '<span class="text-slate-400 text-[10px]">دوري</span>'}</td>
+          <td class="p-3.5">${exp.isEmergency ? '<span class="text-rose-400 text-[10px] font-bold bg-rose-500/10 px-2 py-0.5 rounded">غير متكرر</span>' : '<span class="text-slate-400 text-[10px]">دوري</span>'}</td>
           <td class="p-3.5 text-center whitespace-nowrap">
             <button onclick="editExpense('${exp.id}')" class="text-slate-400 hover:text-cyan-400 p-1.5 transition ml-1" title="تعديل"><i class="fa-regular fa-pen-to-square"></i></button>
             <button onclick="deleteExpense('${exp.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 transition" title="حذف"><i class="fa-regular fa-trash-can"></i></button>
@@ -1262,9 +1315,6 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // 6. Expense Modal Operations & Split Payments
-    // -------------------------------------------------------------
     function openAddExpenseModal() {
       document.getElementById("editingExpenseId").value = "";
       document.getElementById("expenseModalTitle").textContent = "تسجيل مصروف جديد";
@@ -1460,9 +1510,6 @@
       renderApp();
     }
 
-    // -------------------------------------------------------------
-    // 7. Variable Income Modal
-    // -------------------------------------------------------------
     function openAddIncomeModal() {
       document.getElementById("varIncomeAmount").value = "";
       document.getElementById("varIncomeSource").value = "";
@@ -1494,13 +1541,10 @@
       renderApp();
     }
 
-    // -------------------------------------------------------------
-    // 8. Months Operations & Debt Settlement
-    // -------------------------------------------------------------
     function getSelectedMonthKey() {
       const select = document.getElementById("currentMonthSelect");
       if (select && select.value) return select.value;
-      return getTodayIsoMonth();
+      return "2026-09";
     }
 
     function switchMonth(monthKey) {
@@ -1583,9 +1627,6 @@
       renderApp();
     }
 
-    // -------------------------------------------------------------
-    // 9. Control Panel & Settings
-    // -------------------------------------------------------------
     function openControlPanelModal() {
       const user = getCurrentUser();
       document.getElementById("setDisplayName").value = user.displayName || "";
@@ -1597,7 +1638,7 @@
       document.getElementById("setRecoveryKey").value = user.securityKey || "5375";
       document.getElementById("setNewPassword").value = "";
 
-      const isAdmin = user.role === "admin";
+      const isAdmin = (user.role === "admin" || user.username.toLowerCase() === "halshuhiyb");
       const adminSec = document.getElementById("adminOnlyUserSection");
       const nonAdminNotice = document.getElementById("nonAdminNotice");
       if (isAdmin) {
@@ -1782,7 +1823,7 @@
         alert("لا يمكن حذف حسابك النشط!");
         return;
       }
-      if (!confirm(`هل أنت متأكد تماماً من حذف الحساب (${uname}) وكافة سجلاته المالية؟`)) return;
+      if (!confirm(`هل أنت متأكد من حذف الحساب (${uname}) وكافة سجلاته المالية؟`)) return;
 
       delete systemState.users[uname];
       delete systemState.userFinancials[uname];
@@ -1808,16 +1849,19 @@
       reader.onload = async function(e) {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (parsed && parsed.users) {
-            systemState = parsed;
+          const normalized = normalizeStateStructure(parsed);
+          if (normalized) {
+            systemState = normalized;
+            systemState.currentUsername = "halshuhiyb";
             await persistState();
-            alert("تمت استعادة النسخة الاحتياطية بنجاح!");
+            alert("تمت استعادة كافة البيانات والعمليات بنجاح ورفعها للسحابة!");
+            closeControlPanelModal();
             renderApp();
           } else {
-            alert("ملف غير صالح.");
+            alert("صيغة الملف غير متوافقة.");
           }
         } catch (err) {
-          alert("حدث خطأ أثناء قراءة ملف النسخة الاحتياطية.");
+          alert("خطأ أثناء قراءة الملف: " + err.message);
         }
       };
       reader.readAsText(file);
@@ -1841,9 +1885,6 @@
       renderApp();
     }
 
-    // -------------------------------------------------------------
-    // 10. Chart.js Implementations
-    // -------------------------------------------------------------
     function updateCharts(activeMonthKey) {
       const uData = getCurrentUserData();
       const allKeys = Object.keys(uData.months || {}).sort();
@@ -1945,9 +1986,6 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // 11. Theme & Calendar Formatting
-    // -------------------------------------------------------------
     function setTheme(mode) {
       if (!systemState.preferences) systemState.preferences = {};
       systemState.preferences.theme = mode;
@@ -2019,9 +2057,6 @@
       return (parseFloat(num) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // -------------------------------------------------------------
-    // 12. Authentication & Self Recovery Logic
-    // -------------------------------------------------------------
     function togglePasswordVisibility(inputId, iconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
@@ -2046,14 +2081,10 @@
       const p = document.getElementById("loginPassword").value;
       const err = document.getElementById("loginErrorMsg");
 
-      // Search in users by direct match or lowercase keys
       let matchedUser = null;
-      let matchedKey = null;
-
       for (const [key, userObj] of Object.entries(systemState.users || {})) {
         if (key.toLowerCase() === u || (userObj.username && userObj.username.toLowerCase() === u)) {
-          matchedUser = normalizeUserData(userObj, key);
-          matchedKey = key;
+          matchedUser = userObj;
           break;
         }
       }
@@ -2079,13 +2110,10 @@
       const newP = document.getElementById("recNewPassword").value;
       const msg = document.getElementById("recoveryMsg");
 
-      let matchedKey = null;
       let matchedUser = null;
-
       for (const [k, userObj] of Object.entries(systemState.users || {})) {
         if (k.toLowerCase() === u || (userObj.username && userObj.username.toLowerCase() === u)) {
-          matchedUser = normalizeUserData(userObj, k);
-          matchedKey = k;
+          matchedUser = userObj;
           break;
         }
       }
@@ -2120,9 +2148,6 @@
       showView("loginCard");
     }
 
-    // -------------------------------------------------------------
-    // 13. System Initialization
-    // -------------------------------------------------------------
     window.addEventListener("DOMContentLoaded", () => {
       loadLocalState();
       initCloudListener();
