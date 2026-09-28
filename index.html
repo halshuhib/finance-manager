@@ -473,7 +473,7 @@
           </select>
         </div>
 
-        <!-- Split Payment Auto-Box (Appears if expense > available income) -->
+        <!-- Split Payment Auto-Box -->
         <div id="splitPaymentBox" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs space-y-2">
           <div class="flex items-center gap-2 text-amber-300 font-bold">
             <i class="fa-solid fa-circle-exclamation"></i>
@@ -481,12 +481,12 @@
           </div>
           <p class="text-slate-300">هل تود تجزئة الدفع تلقائياً؟ (خصم المتبقي نقداً وترحيل الفائض كدين على البطاقة):</p>
           <label class="flex items-center gap-2 cursor-pointer pt-1 font-bold text-white">
-            <input type="checkbox" id="splitPaymentCheckbox" onchange="toggleSplitPaymentLogic()" class="w-4 h-4 rounded text-amber-500 bg-slate-900 border-slate-700 focus:ring-0" />
+            <input type="checkbox" id="splitPaymentCheckbox" class="w-4 h-4 rounded text-amber-500 bg-slate-900 border-slate-700 focus:ring-0" />
             <span id="splitPaymentSummaryText">تفعيل التجزئة التلقائية</span>
           </label>
         </div>
 
-        <!-- Emergency / Non-recurring Checkbox -->
+        <!-- Emergency Checkbox -->
         <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700 flex items-start gap-3">
           <input type="checkbox" id="expIsEmergency" class="mt-1 w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 focus:ring-0 cursor-pointer" />
           <label for="expIsEmergency" class="text-xs cursor-pointer select-none">
@@ -588,7 +588,7 @@
     </div>
   </div>
 
-  <!-- Modal: Control Panel & Settings -->
+  <!-- Modal: Control Panel & Settings (Cleaned without Backups) -->
   <div id="controlPanelModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <!-- Header -->
@@ -604,7 +604,6 @@
       <div class="flex border-b border-slate-700 bg-slate-900/40 px-4 text-xs font-bold">
         <button onclick="switchSettingsTab('tabProfile')" id="tabBtnProfile" class="py-3 px-4 border-b-2 border-indigo-500 text-indigo-400">حسابي والراتب</button>
         <button onclick="switchSettingsTab('tabUsers')" id="tabBtnUsers" class="py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200">إدارة الحسابات العائلية</button>
-        <button onclick="switchSettingsTab('tabBackup')" id="tabBtnBackup" class="py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200">النسخ الاحتياطي والأمان</button>
       </div>
 
       <!-- Modal Body (Scrollable) -->
@@ -696,7 +695,7 @@
             <div class="border border-slate-700 rounded-xl overflow-hidden">
               <div class="p-3 bg-slate-900/80 font-bold text-white text-xs flex items-center justify-between">
                 <span>قائمة الحسابات المسجلة في النظام</span>
-                <span id="registeredUsersCount" class="text-slate-400 text-[11px]">2 حساب</span>
+                <span id="registeredUsersCount" class="text-slate-400 text-[11px]">حسابات</span>
               </div>
               <table class="w-full text-right text-xs">
                 <thead class="bg-slate-900/40 text-slate-400 border-b border-slate-700">
@@ -715,36 +714,6 @@
           </div>
           <div id="nonAdminNotice" class="hidden p-4 bg-slate-900/60 rounded-xl text-center text-slate-400">
             صلاحية إدارة الحسابات العائلية متاحة فقط لمدير النظام (الأدمن).
-          </div>
-        </div>
-
-        <!-- Tab 3: Backup & Safe Reset -->
-        <div id="tabBackup" class="space-y-4">
-          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-700 space-y-3">
-            <h4 class="font-bold text-white text-xs">النسخ الاحتياطي اليدوي والاستعادة</h4>
-            <p class="text-slate-400">يمكنك دائماً حفظ نسخة محلية على جهازك بصيغة JSON واستعادتها في أي وقت:</p>
-            <div class="flex flex-wrap gap-2 pt-1">
-              <button onclick="exportDataJson()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
-                <i class="fa-solid fa-download"></i>
-                <span>تحميل نسخة احتياطية (JSON)</span>
-              </button>
-              <label class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer">
-                <i class="fa-solid fa-upload"></i>
-                <span>استعادة نسخة من ملف</span>
-                <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden" />
-              </label>
-            </div>
-          </div>
-
-          <div class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl space-y-2">
-            <h4 class="font-bold text-rose-400 text-xs flex items-center gap-1.5">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-              <span>تصفير البيانات الآمن</span>
-            </h4>
-            <p class="text-slate-300">يقوم النظام تلقائياً بتنزيل نسخة احتياطية إجبارية على جهازك أولاً لحماية بياناتك قبل تفريغ العمليات والشهور:</p>
-            <button onclick="promptSafeResetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold transition">
-              تصفير آمن مع تحميل نسخة إجبارية
-            </button>
           </div>
         </div>
       </div>
@@ -830,7 +799,7 @@
     }
 
     // -------------------------------------------------------------
-    // 2. Default Initial Production State
+    // 2. Default Initial State
     // -------------------------------------------------------------
     const getTodayIsoMonth = () => {
       const d = new Date();
@@ -914,7 +883,6 @@
             }
           }
         } else {
-          // Push initial data to cloud if document doesn't exist
           persistState();
         }
       }, (err) => {
@@ -1039,7 +1007,6 @@
         return { nextExpense: 0, nextSurplus: 0, topCategory: "لا توجد بيانات", status: "مستقر ومثالي" };
       }
 
-      // Collect historical monthly cash expenses (excluding emergencies)
       const historicalTotals = [];
       const categoryTotals = {};
 
@@ -1056,7 +1023,6 @@
         historicalTotals.push(regularSum);
       });
 
-      // Weighted moving average
       let predictedExpense = 0;
       if (historicalTotals.length === 1) {
         predictedExpense = historicalTotals[0];
@@ -1070,7 +1036,6 @@
       const currentSum = calculateMonthSummary(activeMonth);
       const predictedSurplus = currentSum.totalIncome - predictedExpense;
 
-      // Find highest category
       let highestCat = "لا توجد بيانات";
       let highestVal = 0;
       for (const [cat, sum] of Object.entries(categoryTotals)) {
@@ -1104,7 +1069,7 @@
       const activeMonthKey = getSelectedMonthKey();
       ensureMonthExists(activeMonthKey);
 
-      // 1. Header Information
+      // Header Information
       const nameBadge = document.getElementById("headerUserNameBadge");
       const subBadge = document.getElementById("headerUserSubtitle");
       const roleBadge = document.getElementById("headerRoleBadge");
@@ -1118,10 +1083,8 @@
           : "text-xs px-2 py-0.5 rounded-md font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
       }
 
-      // 2. Month Selector dropdown
       populateMonthDropdown(activeMonthKey);
 
-      // 3. Summaries & Metric Cards
       const summary = calculateMonthSummary(activeMonthKey);
 
       document.getElementById("cardTotalIncome").innerHTML = `${formatMoney(summary.totalIncome)} <span class="text-xs text-slate-400">ريال</span>`;
@@ -1144,7 +1107,7 @@
       const debtsCount = (uData.months[activeMonthKey].expenses || []).filter(e => e.fundingSource === "credit_card" || e.fundingSource === "loan").length;
       debtBadge.textContent = `${debtsCount} ذمة`;
 
-      // Debt Notification Banner
+      // Debt Banner
       const debtAlertBanner = document.getElementById("debtAlertBanner");
       if (summary.hasDebt) {
         debtAlertBanner.classList.remove("hidden");
@@ -1153,7 +1116,7 @@
         debtAlertBanner.classList.add("hidden");
       }
 
-      // 4. Predictive Analytics Bar
+      // Predictions Bar
       const predictions = calculatePredictions();
       document.getElementById("predNextExpense").textContent = `${formatMoney(predictions.nextExpense)} ر.س`;
       document.getElementById("predNextSurplus").textContent = `${predictions.nextSurplus >= 0 ? '+' : ''}${formatMoney(predictions.nextSurplus)} ر.س`;
@@ -1167,10 +1130,7 @@
         pBadge.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
       }
 
-      // 5. Render Table of Expenses
       renderExpensesTable(activeMonthKey);
-
-      // 6. Update Charts
       updateCharts(activeMonthKey);
     }
 
@@ -1206,7 +1166,6 @@
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-700/30 transition";
 
-        // Category Tag Style
         let catColor = "bg-slate-700 text-slate-200";
         if (exp.category.includes("معيشة")) catColor = "bg-emerald-500/20 text-emerald-300";
         else if (exp.category.includes("ثابت")) catColor = "bg-blue-500/20 text-blue-300";
@@ -1215,7 +1174,6 @@
         else if (exp.category.includes("مطاعم")) catColor = "bg-rose-500/20 text-rose-300";
         else if (exp.category.includes("ادخار")) catColor = "bg-teal-500/20 text-teal-300";
 
-        // Funding Source Label
         let fundLabel = `<span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-wallet"></i> الدخل الشهري المتاح</span>`;
         if (exp.fundingSource === "credit_card") {
           fundLabel = `<span class="text-amber-400 font-bold flex items-center gap-1"><i class="fa-solid fa-credit-card"></i> بطاقة ائتمانية (دين)</span>`;
@@ -1257,7 +1215,6 @@
       document.getElementById("splitPaymentBox").classList.add("hidden");
       document.getElementById("splitPaymentCheckbox").checked = false;
 
-      // Set date to today
       const today = new Date().toISOString().split("T")[0];
       document.getElementById("expDate").value = today;
 
@@ -1288,11 +1245,9 @@
 
       if (sourceSelect.value === "income") {
         if (sum.cashSurplus <= 0 && amt > 0) {
-          // Cash depleted entirely
           sourceSelect.value = "credit_card";
           splitBox.classList.add("hidden");
         } else if (amt > sum.cashSurplus && sum.cashSurplus > 0) {
-          // Cash partially available: show split option
           splitBox.classList.remove("hidden");
           const debtPart = amt - sum.cashSurplus;
           document.getElementById("splitPaymentSummaryText").textContent = 
@@ -1307,10 +1262,6 @@
 
     function handleFundingSourceChange() {
       evaluateFundingSourceSuggestion();
-    }
-
-    function toggleSplitPaymentLogic() {
-      // Checked state handled in handleSaveExpense
     }
 
     async function handleSaveExpense(e) {
@@ -1329,7 +1280,6 @@
       const mData = uData.months[activeMonthKey];
       const sum = calculateMonthSummary(activeMonthKey);
 
-      // Handle Savings Box balance deduction
       if (source === "savings") {
         if (amount > (uData.savingsBox || 0)) {
           alert("رصيد صندوق الادخار التراكمي غير كافٍ لتغطية هذا المبلغ!");
@@ -1338,10 +1288,8 @@
       }
 
       if (editId) {
-        // Edit existing
         const idx = mData.expenses.findIndex(x => x.id === editId);
         if (idx !== -1) {
-          // Revert old savings if needed
           if (mData.expenses[idx].fundingSource === "savings") {
             uData.savingsBox = (uData.savingsBox || 0) + mData.expenses[idx].amount;
           }
@@ -1359,12 +1307,10 @@
           }
         }
       } else {
-        // Check for split payment
         if (source === "income" && doSplit && sum.cashSurplus > 0 && amount > sum.cashSurplus) {
           const cashPortion = sum.cashSurplus;
           const debtPortion = amount - sum.cashSurplus;
 
-          // 1. Cash Expense
           mData.expenses.push({
             id: 'exp_' + Date.now() + '_1',
             amount: cashPortion,
@@ -1375,7 +1321,6 @@
             isEmergency: isEmergency
           });
 
-          // 2. Debt Expense
           mData.expenses.push({
             id: 'exp_' + Date.now() + '_2',
             amount: debtPortion,
@@ -1386,11 +1331,9 @@
             isEmergency: isEmergency
           });
         } else {
-          // Normal Single Expense
           if (source === "savings") {
             uData.savingsBox = Math.max(0, (uData.savingsBox || 0) - amount);
           } else if (category === "ادخار واستثمار" && source === "income") {
-            // Feeding the savings box
             uData.savingsBox = (uData.savingsBox || 0) + amount;
           }
 
@@ -1542,7 +1485,6 @@
         return;
       }
 
-      // Calculate Next Month Key
       const parts = activeMonthKey.split("-");
       let year = parseInt(parts[0]);
       let month = parseInt(parts[1]) + 1;
@@ -1555,7 +1497,6 @@
       ensureMonthExists(nextMonthKey);
       const uData = getCurrentUserData();
 
-      // Add Settlement Expense to Next Month
       uData.months[nextMonthKey].expenses.push({
         id: 'settle_' + Date.now(),
         amount: sum.debtSpent,
@@ -1566,7 +1507,6 @@
         isEmergency: false
       });
 
-      // Clear debt from current month by marking them as settled
       (uData.months[activeMonthKey].expenses || []).forEach(e => {
         if (e.fundingSource === "credit_card" || e.fundingSource === "loan") {
           e.fundingSource = "income";
@@ -1581,7 +1521,7 @@
     }
 
     // -------------------------------------------------------------
-    // 9. Control Panel & Settings
+    // 9. Control Panel & Profile Management
     // -------------------------------------------------------------
     function openControlPanelModal() {
       const user = getCurrentUser();
@@ -1594,7 +1534,6 @@
       document.getElementById("setRecoveryKey").value = user.securityKey || "5375";
       document.getElementById("setNewPassword").value = "";
 
-      // Multi-user view access
       const isAdmin = user.role === "admin";
       const adminSec = document.getElementById("adminOnlyUserSection");
       const nonAdminNotice = document.getElementById("nonAdminNotice");
@@ -1616,22 +1555,22 @@
     }
 
     function switchSettingsTab(tabId) {
-      ['tabProfile', 'tabUsers', 'tabBackup'].forEach(t => {
-        document.getElementById(t).classList.add("hidden");
+      ['tabProfile', 'tabUsers'].forEach(t => {
+        const el = document.getElementById(t);
+        if (el) el.classList.add("hidden");
       });
-      document.getElementById(tabId).classList.remove("hidden");
+      const activeEl = document.getElementById(tabId);
+      if (activeEl) activeEl.classList.remove("hidden");
 
-      const btns = {
-        tabProfile: document.getElementById("tabBtnProfile"),
-        tabUsers: document.getElementById("tabBtnUsers"),
-        tabBackup: document.getElementById("tabBtnBackup")
-      };
-      for (const [key, btn] of Object.entries(btns)) {
-        if (key === tabId) {
-          btn.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
-        } else {
-          btn.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
-        }
+      const tabBtnProfile = document.getElementById("tabBtnProfile");
+      const tabBtnUsers = document.getElementById("tabBtnUsers");
+
+      if (tabId === 'tabProfile') {
+        tabBtnProfile.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
+        tabBtnUsers.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+      } else {
+        tabBtnUsers.className = "py-3 px-4 border-b-2 border-indigo-500 text-indigo-400 font-bold";
+        tabBtnProfile.className = "py-3 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
       }
     }
 
@@ -1788,60 +1727,6 @@
       renderUsersListTable();
     }
 
-    // Backup & Restore
-    function exportDataJson() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(systemState, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `FINANCE_BACKUP_${getTodayIsoMonth()}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function importDataJson(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed && parsed.users) {
-            systemState = parsed;
-            await persistState();
-            alert("تمت استعادة النسخة الاحتياطية ومزامنتها سحابياً بنجاح!");
-            renderApp();
-          } else {
-            alert("ملف غير صالح.");
-          }
-        } catch (err) {
-          alert("حدث خطأ أثناء قراءة ملف النسخة الاحتياطية.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    async function promptSafeResetSystem() {
-      if (!confirm("تنبيه: سيقوم النظام بتنزيل نسخة احتياطية إجبارية على جهازك أولاً، ثم مسح كافة المصاريف للبدء من جديد. هل توافق؟")) {
-        return;
-      }
-      // Mandatory export
-      exportDataJson();
-
-      // Reset Current User's Financials
-      const uname = getCurrentUser().username;
-      systemState.userFinancials[uname] = {
-        savingsBox: 0,
-        months: {}
-      };
-      ensureMonthExists(getTodayIsoMonth());
-      await persistState();
-      alert("تم تنزيل النسخة الاحتياطية وإعادة ضبط المصروفات بنجاح.");
-      closeControlPanelModal();
-      renderApp();
-    }
-
     // -------------------------------------------------------------
     // 10. Chart.js Implementations
     // -------------------------------------------------------------
@@ -1849,7 +1734,6 @@
       const uData = getCurrentUserData();
       const allKeys = Object.keys(uData.months).sort();
 
-      // 1. Trend Line & Bar Chart
       const trendLabels = allKeys.map(k => formatMonthNameDisplay(k));
       const cashData = allKeys.map(k => calculateMonthSummary(k).cashSpent);
       const debtData = allKeys.map(k => calculateMonthSummary(k).debtSpent);
@@ -1908,7 +1792,6 @@
         });
       }
 
-      // 2. Category Doughnut Chart
       const mData = uData.months[activeMonthKey];
       const catMap = {};
       (mData.expenses || []).forEach(e => {
@@ -2106,7 +1989,6 @@
       loadLocalState();
       initCloudListener();
 
-      // Apply initial theme
       setTheme(systemState.preferences.theme || "dark");
 
       if (isLoggedIn()) {
