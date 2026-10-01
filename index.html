@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>نظام إدارة وتحليل المصروفات العائلي الذكي - v2.6.4</title>
+  <title>نظام إدارة وتحليل المصروفات المحاسبي المطور - v2.7.0</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -29,13 +29,13 @@
     }
   </script>
 
-  <!-- Font Awesome CDN -->
+  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Firebase App & Firestore SDKs -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -64,7 +64,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen transition-colors duration-200">
 
-  <!-- ================= AUTH CONTAINER ================= -->
+  <!-- 1. AUTHENTICATION VIEW -->
   <div id="authContainer" class="flex min-h-screen items-center justify-center p-4">
     <!-- Login Card -->
     <div id="loginCard" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8">
@@ -73,7 +73,7 @@
           <i class="fa-solid fa-wallet"></i>
         </div>
         <h1 class="text-2xl font-bold text-white mb-1">تسجيل الدخول للنظام المالي</h1>
-        <p class="text-sm text-slate-400">إدارة المصروفات والتنبؤ المالي العائلي <span class="text-xs text-emerald-400 font-mono">v2.6.4</span></p>
+        <p class="text-sm text-slate-400">نظام الميزانية والتدقيق المحاسبي الذكي <span class="text-xs text-emerald-400 font-mono font-bold">v2.7.0</span></p>
       </div>
 
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
@@ -86,7 +86,7 @@
           <label class="block text-sm font-semibold text-slate-300 mb-1">كلمة المرور</label>
           <div class="relative">
             <input type="password" id="loginPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 pr-4 pl-11" autocomplete="current-password" />
-            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
+            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none p-1">
               <i id="loginEyeIcon" class="fa-regular fa-eye"></i>
             </button>
           </div>
@@ -159,7 +159,7 @@
     </div>
   </div>
 
-  <!-- ================= MAIN APP VIEW ================= -->
+  <!-- 2. MAIN APPLICATION DASHBOARD -->
   <div id="appContainer" class="hidden min-h-screen flex flex-col">
     <!-- Header -->
     <header class="bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-40 backdrop-blur">
@@ -173,13 +173,13 @@
             <div class="flex items-center gap-2">
               <span id="headerUserNameBadge" class="font-bold text-white text-base">حسين يوسف الشهيب</span>
               <span id="headerRoleBadge" class="text-xs px-2 py-0.5 rounded-md font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">مدير النظام</span>
-              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/80 text-emerald-400 font-mono border border-slate-600" title="إصدار النظام المعتمد">v2.6.4</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/80 text-emerald-400 font-mono border border-slate-600">v2.7.0 محاسبي</span>
             </div>
             <p id="headerUserSubtitle" class="text-xs text-slate-400 font-medium">محلل ومصمم نظم - إمارة المنطقة الشرقية</p>
           </div>
         </div>
 
-        <!-- Toolbar Buttons -->
+        <!-- Controls Toolbar -->
         <div class="flex flex-wrap items-center gap-2">
           <div id="cloudStatusBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" title="متصل بسحابة Firebase Firestore">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -192,9 +192,9 @@
           </button>
 
           <div class="flex items-center bg-slate-700/70 rounded-xl p-1 border border-slate-600">
-            <button onclick="setTheme('light')" id="themeBtnLight" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-sun"></i></button>
-            <button onclick="setTheme('dark')" id="themeBtnDark" class="p-1.5 px-2 rounded-lg text-xs text-emerald-400 bg-slate-800 shadow transition"><i class="fa-solid fa-moon"></i></button>
-            <button onclick="setTheme('system')" id="themeBtnSys" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-desktop"></i></button>
+            <button onclick="setTheme('light')" id="themeBtnLight" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition" title="نهاري"><i class="fa-solid fa-sun"></i></button>
+            <button onclick="setTheme('dark')" id="themeBtnDark" class="p-1.5 px-2 rounded-lg text-xs text-emerald-400 bg-slate-800 shadow transition" title="ليلي"><i class="fa-solid fa-moon"></i></button>
+            <button onclick="setTheme('system')" id="themeBtnSys" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition" title="تلقائي"><i class="fa-solid fa-desktop"></i></button>
           </div>
 
           <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-700 rounded-xl px-2 py-1">
@@ -224,9 +224,10 @@
       </div>
     </header>
 
-    <!-- Main Content Body -->
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 flex-1 w-full">
-      <!-- Debt Alert Notification (Banner) -->
+      
+      <!-- Active Debt Warning Banner -->
       <div id="debtAlertBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
@@ -235,106 +236,105 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="text-xs px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300">مطلوب سدادها</span>
-              <h4 class="font-bold text-white text-sm">تنبيه تمويل عجز الصرف: ديون مسجلة على البطاقات والسلف</h4>
+              <h4 class="font-bold text-white text-sm">تنبيه محاسبي: ديون وبطاقات معلقة غير مسددة</h4>
             </div>
-            <p id="debtAlertMsg" class="text-xs text-slate-300 mt-0.5">لديك مديونية معلقة نشأت بسبب تجاوز السيولة. يجب جدولتها في ميزانية الشهر القادم.</p>
+            <p id="debtAlertMsg" class="text-xs text-slate-300 mt-0.5"></p>
           </div>
         </div>
         <button onclick="openSettleDebtModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
           <i class="fa-solid fa-file-invoice-dollar"></i>
-          <span>ترحيل وسداد في الشهر القادم</span>
+          <span>ترحيل وجدولة السداد للشهر القادم</span>
         </button>
       </div>
 
-      <!-- Financial Metrics Cards Grid -->
+      <!-- Financial Metric Cards (5 Cards) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- 1. Total Income & Carried Forward Balance -->
+        <!-- 1. Actual Monthly Income -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">إجمالي المتاح للشهر</span>
+            <span class="text-xs font-semibold text-slate-400">الدخل الشهري الصافي</span>
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm"><i class="fa-solid fa-money-bill-wave"></i></div>
           </div>
-          <div class="text-xl font-bold text-white tracking-wide" id="cardTotalIncome">0.00 <span class="text-xs text-slate-400">ريال</span></div>
+          <div class="text-xl font-bold text-white tracking-wide" id="cardMonthlyIncome">0.00 <span class="text-xs text-slate-400">ريال</span></div>
           <div class="text-[11px] text-slate-400 mt-1" id="cardIncomeBreakdown">راتب: 0.00 ر.س</div>
         </div>
 
-        <!-- 2. Total Expenses -->
+        <!-- 2. Carried Forward Opening Balance -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">إجمالي المصروفات</span>
+            <span class="text-xs font-semibold text-slate-400">الفائض المرحل (رصيد افتتاحي)</span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-sm"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          </div>
+          <div class="text-xl font-bold text-indigo-300 tracking-wide" id="cardCarriedSurplus">0.00 <span class="text-xs text-slate-400">ريال</span></div>
+          <div class="text-[11px] text-slate-400 mt-1">منقول نقداً من الشهر السابق</div>
+        </div>
+
+        <!-- 3. Total Cash Expenses Paid -->
+        <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-400">المصروفات النقدية المسددة</span>
             <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm"><i class="fa-solid fa-receipt"></i></div>
           </div>
-          <div class="text-xl font-bold text-white tracking-wide" id="cardTotalExpenses">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1" id="cardExpenseBreakdown">0 عمليات</div>
+          <div class="text-xl font-bold text-white tracking-wide" id="cardCashExpenses">0.00 <span class="text-xs text-slate-400">ريال</span></div>
+          <div class="text-[11px] text-slate-400 mt-1" id="cardExpenseBreakdown">0 عمليات كاش</div>
         </div>
 
-        <!-- 3. Net Liquidity Surplus -->
+        <!-- 4. Net Ending Cash Surplus -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">فائض السيولة النقدية</span>
+            <span class="text-xs font-semibold text-slate-400">صافي السيولة النقدية المتبقية</span>
             <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-sm"><i class="fa-solid fa-scale-balanced"></i></div>
           </div>
-          <div class="text-xl font-bold tracking-wide" id="cardCashSurplus">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1" id="cardSurplusRatio">شاملاً الفائض المرحل</div>
+          <div class="text-xl font-bold tracking-wide" id="cardEndingCashSurplus">0.00 <span class="text-xs text-slate-400">ريال</span></div>
+          <div class="text-[11px] text-slate-400 mt-1" id="cardSurplusStatusDesc">فائض ينتقل للشهر القادم</div>
         </div>
 
-        <!-- 4. Cumulative Savings Box -->
+        <!-- 5. Cumulative Savings Vault -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold text-slate-400">صندوق الادخار التراكمي</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">مجمع كلياً</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">محفظة كلية</span>
           </div>
           <div class="text-xl font-bold text-cyan-400 tracking-wide" id="cardSavingsTotal">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1">رصيد تراكمي لجميع الشهور</div>
-        </div>
-
-        <!-- 5. Active Debt / Credit Cards -->
-        <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">ديون وبطاقات معلقة</span>
-            <span id="debtCountBadge" class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">0 ذمة</span>
-          </div>
-          <div class="text-xl font-bold text-amber-400 tracking-wide" id="cardDebtTotal">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1">واجبة السداد في الميزانية</div>
+          <div class="text-[11px] text-slate-400 mt-1">جاهز للسحب والتمويل المباشر</div>
         </div>
       </div>
 
-      <!-- Advanced Financial Intelligence & Statistical Analytics -->
-      <div class="bg-gradient-to-r from-slate-800 via-slate-800 to-indigo-950/40 border border-indigo-500/30 rounded-2xl p-5 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
-              <i class="fa-solid fa-chart-line"></i>
+      <!-- Financial Statement & Cash Flow Statement (كشف حركة السيولة الصريح) -->
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <h3 class="font-bold text-white text-base">تقرير التحليل الإحصائي ومسار الذكاء المالي</h3>
-                <span id="analyticsHealthBadge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">تحت السيطرة</span>
-              </div>
-              <p id="analyticsInsightDesc" class="text-xs text-slate-300 mt-0.5">تحليل مقارن يربط حركة الصرف الحالية بالشهور السابقة.</p>
+              <h3 class="text-sm font-bold text-white">ميزان السيولة والكشف المحاسبي الشهري</h3>
+              <p class="text-xs text-slate-400">توضيح شفاف لمعادلة التدفق النقدي والالتزامات المعلقة</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-medium" id="analyticsSavingsRate">إجمالي الادخار التراكمي: 0.00 ر.س</span>
+          <div class="flex items-center gap-3 text-xs">
+            <span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-amber-300 font-semibold" id="cardPendingDebtsIndicator">
+              <i class="fa-solid fa-credit-card ml-1"></i> ديون وبطاقات معلقة: 0.00 ر.س
+            </span>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-700/60">
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
-            <span class="text-[11px] text-slate-400 block mb-1">متوسط الصرف اليومي (Burn Rate)</span>
-            <span class="text-base font-bold text-white" id="statDailyBurn">0.00 ر.س / يوم</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60">
+            <span class="text-slate-400 block mb-1">الرصيد الافتتاحي المنقول (+)</span>
+            <span class="text-base font-bold text-indigo-300" id="cfOpening">0.00 ر.س</span>
           </div>
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
-            <span class="text-[11px] text-slate-400 block mb-1">الفائض المرحل من الشهر السابق</span>
-            <span class="text-base font-bold text-cyan-400" id="statCarriedForward">0.00 ر.س</span>
+          <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60">
+            <span class="text-slate-400 block mb-1">الدخل الفعلي للشهر (+)</span>
+            <span class="text-base font-bold text-emerald-400" id="cfInflow">0.00 ر.س</span>
           </div>
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
-            <span class="text-[11px] text-slate-400 block mb-1">أعلى بند استهلاك بالشهر</span>
-            <span class="text-base font-bold text-amber-300" id="statTopCategory">-</span>
+          <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60">
+            <span class="text-slate-400 block mb-1">المصروفات النقدية المسددة (-)</span>
+            <span class="text-base font-bold text-rose-400" id="cfOutflow">0.00 ر.س</span>
           </div>
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
-            <span class="text-[11px] text-slate-400 block mb-1">توقع الفائض بنهاية الشهر</span>
-            <span class="text-base font-bold text-emerald-400" id="statProjectedSurplus">0.00 ر.س</span>
+          <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60">
+            <span class="text-slate-400 block mb-1">الفائض النقدي الختامي المرحل (=)</span>
+            <span class="text-base font-bold text-cyan-300" id="cfClosing">0.00 ر.س</span>
           </div>
         </div>
       </div>
@@ -345,7 +345,7 @@
           <div class="flex items-center justify-between mb-4">
             <h4 class="font-bold text-white text-sm flex items-center gap-2">
               <i class="fa-solid fa-chart-column text-emerald-400"></i>
-              <span>مسار التدفق المالي: الصرف والادخار للشهور</span>
+              <span>مسار التدفق المالي الشهري (الدخل، الصرف، والادخار)</span>
             </h4>
           </div>
           <div class="h-64">
@@ -357,9 +357,8 @@
           <div class="flex items-center justify-between mb-4">
             <h4 class="font-bold text-white text-sm flex items-center gap-2">
               <i class="fa-solid fa-chart-pie text-cyan-400"></i>
-              <span>توزيع المصروفات</span>
+              <span>توزيع المصروفات حسب الفئة</span>
             </h4>
-            <span class="text-xs text-slate-400">حسب الفئة</span>
           </div>
           <div class="h-56 relative flex items-center justify-center flex-1">
             <canvas id="categoryChart"></canvas>
@@ -367,17 +366,78 @@
         </div>
       </div>
 
-      <!-- Expenses Data Table -->
+      <!-- Expenses Data Table & Filters / Sorters (الفرز والفلترة المتقدمة) -->
       <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
-              <i class="fa-solid fa-list-check"></i>
+        <div class="p-4 border-b border-slate-700/80 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">سجل العمليات والمصروفات للشهر</h4>
+                <p class="text-xs text-slate-400" id="tableFilterSummaryText">عرض كافة العمليات</p>
+              </div>
             </div>
-            <h4 class="font-bold text-white text-sm">سجل العمليات والمصروفات للشهر الحالي</h4>
+
+            <!-- Total of Filtered Operations Badge -->
+            <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
+              <span class="text-slate-400">المجموع المفلتر:</span>
+              <span class="font-bold text-emerald-400 text-sm font-mono" id="filteredTotalSum">0.00 ر.س</span>
+              <span class="text-slate-400 text-[11px]">(<span id="filteredTotalCount">0</span> عملية)</span>
+            </div>
           </div>
-          <div class="text-xs text-slate-400">
-            تتبع التمويل: دخل متاح، صندوق ادخار، أو بطاقة ائتمانية / سلفة
+
+          <!-- Sorting & Filtering Controls Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1 text-xs">
+            <!-- Search Input -->
+            <div class="relative">
+              <input type="text" id="expenseSearchInput" oninput="applyTableFilters()" placeholder="بحث في الوصف..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 pl-8" />
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            </div>
+
+            <!-- Sort By Select -->
+            <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5">
+              <i class="fa-solid fa-arrow-down-wide-short text-slate-400 ml-2"></i>
+              <select id="expenseSortSelect" onchange="applyTableFilters()" class="bg-transparent text-white focus:outline-none w-full cursor-pointer">
+                <option value="date-desc">التاريخ (الأحدث أولاً)</option>
+                <option value="date-asc">التاريخ (الأقدم أولاً)</option>
+                <option value="amount-desc">المبلغ (من الأعلى للأقل)</option>
+                <option value="amount-asc">المبلغ (من الأقل للأعلى)</option>
+                <option value="category">الفئة (أبجدياً)</option>
+              </select>
+            </div>
+
+            <!-- Filter by Category -->
+            <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5">
+              <i class="fa-solid fa-filter text-slate-400 ml-2"></i>
+              <select id="expenseCategoryFilter" onchange="applyTableFilters()" class="bg-transparent text-white focus:outline-none w-full cursor-pointer">
+                <option value="ALL">جميع الفئات</option>
+                <option value="معيشة وبقالة">معيشة وبقالة</option>
+                <option value="ثابت والتزامات">ثابت والتزامات</option>
+                <option value="فواتير واشتراكات">فواتير واشتراكات</option>
+                <option value="نقل ومحروقات">نقل ومحروقات</option>
+                <option value="سداد ديون وبطاقات">سداد ديون وبطاقات</option>
+                <option value="تسوق ورفاهية">تسوق ورفاهية</option>
+                <option value="مطاعم وكافيهات">مطاعم وكافيهات</option>
+                <option value="صحة وطب">صحة وطب</option>
+                <option value="ادخار واستثمار">ادخار واستثمار</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+
+            <!-- Filter by Payment Method -->
+            <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2 py-1.5">
+              <i class="fa-solid fa-wallet text-slate-400 ml-2"></i>
+              <select id="expenseFundingFilter" onchange="applyTableFilters()" class="bg-transparent text-white focus:outline-none w-full cursor-pointer">
+                <option value="ALL">جميع وسائل الدفع</option>
+                <option value="income">الدخل المتاح (كاش)</option>
+                <option value="credit_card">بطاقات ائتمانية (دين)</option>
+                <option value="loan">سلف شخصية</option>
+                <option value="savings">السحب من صندوق الادخار</option>
+                <option value="settled">تمت التسوية والترحيل</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -400,14 +460,13 @@
       </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-slate-800/70 border-t border-slate-700/80 py-4 px-4 text-center text-xs text-slate-400 flex flex-wrap items-center justify-between max-w-7xl mx-auto w-full">
       <span>نظام إدارة وتحليل المصروفات والتنبؤ المالي الذكي &copy; 2026 - مزامنة سحابية مؤمنة عبر Google Firebase</span>
-      <span class="font-mono text-emerald-400 bg-slate-900/80 border border-slate-700 px-2 py-0.5 rounded">النسخة المعتمدة: v2.6.4</span>
+      <span class="font-mono text-emerald-400 bg-slate-900/80 border border-slate-700 px-2 py-0.5 rounded">الإصدار المحاسبي: v2.7.0</span>
     </footer>
   </div>
 
-  <!-- ================= MODALS ================= -->
+  <!-- MODALS -->
 
   <!-- Modal: Settle Debt (Roll to Next Month) -->
   <div id="settleDebtModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
@@ -720,7 +779,7 @@
               <i class="fa-solid fa-triangle-exclamation"></i>
               <span>تصفير البيانات الآمن</span>
             </h4>
-            <p class="text-slate-300">يقوم النظام تلقائياً بتنزيل نسخة احتياطية إجبارية على جهازك أولاً لحماية بياناتك قبل تفريغ العمليات:</p>
+            <p class="text-slate-300">يقوم النظام بتنزيل نسخة احتياطية إجبارية على جهازك أولاً قبل تفريغ العمليات:</p>
             <button onclick="promptSafeResetSystem()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
               <i class="fa-solid fa-rotate-left"></i>
               <span>تصفير آمن مع تحميل نسخة إجبارية</span>
@@ -778,7 +837,7 @@
 
   <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
-    const APP_VERSION = "v2.6.4";
+    const APP_VERSION = "v2.7.0";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAtCIZSXO0JoZXpDKtwuKW0a6ybJMmXDSo",
@@ -1036,7 +1095,6 @@
       return sal;
     }
 
-    // حساب الرصيد التراكمي الشامل لصندوق الادخار عبر كل الشهور
     function calculateTotalCumulativeSavings() {
       const uData = getCurrentUserData();
       let totalSaved = 0;
@@ -1058,7 +1116,6 @@
       return Math.max(0, balance);
     }
 
-    // حساب الفائض النقدي المرحل من الشهر السابق مباشرة
     function calculateCarriedForwardSurplus(targetMonthKey) {
       const uData = getCurrentUserData();
       const allKeys = Object.keys(uData.months || {}).sort();
@@ -1079,7 +1136,7 @@
 
       const baseSal = getMonthSalary(monthKey);
       const totalVarIncome = (mData.variableIncomes || []).reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0);
-      const totalIncome = baseSal + totalVarIncome;
+      const actualMonthIncome = baseSal + totalVarIncome;
 
       let cashSpent = 0;
       let debtSpent = 0;
@@ -1100,11 +1157,11 @@
         monthKey,
         baseSalary: baseSal,
         totalVarIncome,
-        totalIncome,
+        actualMonthIncome,
         cashSpent,
         debtSpent,
         savingsSpent,
-        cashSurplus: totalIncome - cashSpent,
+        cashSurplus: actualMonthIncome - cashSpent,
         totalExpenses: cashSpent + debtSpent + savingsSpent,
         expensesCount: (mData.expenses || []).length,
         hasDebt: debtSpent > 0
@@ -1116,7 +1173,7 @@
       const baseSummary = calculateMonthBaseSummary(monthKey);
       const carriedSurplus = calculateCarriedForwardSurplus(monthKey);
 
-      const effectiveTotalAvailable = baseSummary.totalIncome + carriedSurplus;
+      const effectiveTotalAvailable = baseSummary.actualMonthIncome + carriedSurplus;
       const netCashSurplus = effectiveTotalAvailable - baseSummary.cashSpent;
 
       return {
@@ -1124,52 +1181,6 @@
         carriedForwardSurplus: carriedSurplus,
         effectiveTotalAvailable: effectiveTotalAvailable,
         cashSurplus: netCashSurplus
-      };
-    }
-
-    // وحدة التحليل الإحصائي والذكاء المالي
-    function generateSmartFinancialAnalytics(activeMonthKey) {
-      const summary = calculateMonthSummary(activeMonthKey);
-      const uData = getCurrentUserData();
-      const mData = uData.months[activeMonthKey];
-      const expenses = (mData && mData.expenses) || [];
-
-      // 1. حساب متوسط الصرف اليومي (Burn Rate)
-      const now = new Date();
-      const dayOfMonth = Math.max(1, now.getDate());
-      const dailyBurn = summary.cashSpent > 0 ? (summary.cashSpent / dayOfMonth) : 0;
-
-      // 2. أعلى فئة مستهلكة
-      const catMap = {};
-      expenses.forEach(e => {
-        const amt = parseFloat(e.amount) || 0;
-        catMap[e.category] = (catMap[e.category] || 0) + amt;
-      });
-
-      let topCategory = "لا توجد مصروفات";
-      let topCategoryAmount = 0;
-      for (const [cat, amt] of Object.entries(catMap)) {
-        if (amt > topCategoryAmount) {
-          topCategoryAmount = amt;
-          topCategory = `${cat} (${formatMoney(amt)} ر.س)`;
-        }
-      }
-
-      // 3. نسبة الادخار
-      const totalSavings = calculateTotalCumulativeSavings();
-      const savingsRate = summary.effectiveTotalAvailable > 0 ? ((totalSavings / (summary.baseSalary * 12)) * 100).toFixed(1) : 0;
-
-      // 4. توقع الفائض بنهاية الشهر
-      const daysInMonth = 30;
-      const projectedTotalSpent = dailyBurn * daysInMonth;
-      const projectedSurplus = summary.effectiveTotalAvailable - projectedTotalSpent;
-
-      return {
-        dailyBurn,
-        topCategory,
-        carriedForward: summary.carriedForwardSurplus,
-        savingsRate,
-        projectedSurplus
       };
     }
 
@@ -1196,48 +1207,45 @@
 
       const summary = calculateMonthSummary(activeMonthKey);
 
-      // Card 1: Total Available
-      document.getElementById("cardTotalIncome").innerHTML = `${formatMoney(summary.effectiveTotalAvailable)} <span class="text-xs text-slate-400">ريال</span>`;
-      document.getElementById("cardIncomeBreakdown").textContent = `راتب: ${formatMoney(summary.baseSalary)} | مرحّل: ${formatMoney(summary.carriedForwardSurplus)} ر.س`;
+      // Card 1: Actual Monthly Income
+      document.getElementById("cardMonthlyIncome").innerHTML = `${formatMoney(summary.actualMonthIncome)} <span class="text-xs text-slate-400">ريال</span>`;
+      document.getElementById("cardIncomeBreakdown").textContent = `راتب: ${formatMoney(summary.baseSalary)} | إضافي: ${formatMoney(summary.totalVarIncome)} ر.س`;
 
-      // Card 2: Expenses
-      document.getElementById("cardTotalExpenses").innerHTML = `${formatMoney(summary.totalExpenses)} <span class="text-xs text-slate-400">ريال</span>`;
-      document.getElementById("cardExpenseBreakdown").textContent = `${summary.expensesCount} عمليات (نقد: ${formatMoney(summary.cashSpent)} / دين: ${formatMoney(summary.debtSpent)})`;
+      // Card 2: Carried Surplus Opening Balance
+      document.getElementById("cardCarriedSurplus").innerHTML = `+${formatMoney(summary.carriedForwardSurplus)} <span class="text-xs text-slate-400">ريال</span>`;
 
-      // Card 3: Net Cash Surplus
-      const surplusElem = document.getElementById("cardCashSurplus");
+      // Card 3: Cash Expenses Paid
+      document.getElementById("cardCashExpenses").innerHTML = `${formatMoney(summary.cashSpent)} <span class="text-xs text-slate-400">ريال</span>`;
+      document.getElementById("cardExpenseBreakdown").textContent = `${summary.expensesCount} عمليات مسجلة`;
+
+      // Card 4: Ending Net Cash Surplus
+      const surplusElem = document.getElementById("cardEndingCashSurplus");
       surplusElem.innerHTML = `${summary.cashSurplus >= 0 ? '+' : ''}${formatMoney(summary.cashSurplus)} <span class="text-xs text-slate-400">ريال</span>`;
       surplusElem.className = `text-xl font-bold tracking-wide ${summary.cashSurplus >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-      document.getElementById("cardSurplusRatio").textContent = `فائض صافي مع السيولة السابقة`;
 
-      // Card 4: Cumulative Savings Box
+      // Card 5: Cumulative Savings Vault
       const totalCumulativeSavings = calculateTotalCumulativeSavings();
       document.getElementById("cardSavingsTotal").innerHTML = `${formatMoney(totalCumulativeSavings)} <span class="text-xs text-slate-400">ريال</span>`;
 
-      // Card 5: Debts Outstanding
-      document.getElementById("cardDebtTotal").innerHTML = `${formatMoney(summary.debtSpent)} <span class="text-xs text-slate-400">ريال</span>`;
-      const debtBadge = document.getElementById("debtCountBadge");
-      const activeDebtsCount = (getCurrentUserData().months[activeMonthKey].expenses || []).filter(e => (e.fundingSource === "credit_card" || e.fundingSource === "loan") && !e.settled).length;
-      debtBadge.textContent = `${activeDebtsCount} ذمة`;
+      // Debts Badge Indicator
+      document.getElementById("cardPendingDebtsIndicator").innerHTML = `<i class="fa-solid fa-credit-card ml-1"></i> ديون وبطاقات معلقة: ${formatMoney(summary.debtSpent)} ر.س`;
 
       // Debt Notification Banner
       const debtAlertBanner = document.getElementById("debtAlertBanner");
       if (summary.hasDebt) {
         debtAlertBanner.classList.remove("hidden");
-        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال (على البطاقات أو السلف).`;
+        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال على البطاقات والسلف لم تسدد بعد من الكاش.`;
       } else {
         debtAlertBanner.classList.add("hidden");
       }
 
-      // Render Analytics Panel
-      const analytics = generateSmartFinancialAnalytics(activeMonthKey);
-      document.getElementById("statDailyBurn").textContent = `${formatMoney(analytics.dailyBurn)} ر.س / يوم`;
-      document.getElementById("statCarriedForward").textContent = `+${formatMoney(analytics.carriedForward)} ر.س`;
-      document.getElementById("statTopCategory").textContent = analytics.topCategory;
-      document.getElementById("statProjectedSurplus").textContent = `${analytics.projectedSurplus >= 0 ? '+' : ''}${formatMoney(analytics.projectedSurplus)} ر.س`;
-      document.getElementById("analyticsSavingsRate").textContent = `إجمالي الادخار التراكمي: ${formatMoney(totalCumulativeSavings)} ر.س`;
+      // Cash Flow Statement (كشف حركة السيولة الصريح)
+      document.getElementById("cfOpening").textContent = `+${formatMoney(summary.carriedForwardSurplus)} ر.س`;
+      document.getElementById("cfInflow").textContent = `+${formatMoney(summary.actualMonthIncome)} ر.س`;
+      document.getElementById("cfOutflow").textContent = `-${formatMoney(summary.cashSpent)} ر.س`;
+      document.getElementById("cfClosing").textContent = `${formatMoney(summary.cashSurplus)} ر.س`;
 
-      renderExpensesTable(activeMonthKey);
+      applyTableFilters();
       updateCharts(activeMonthKey);
     }
 
@@ -1257,14 +1265,60 @@
       });
     }
 
-    function renderExpensesTable(monthKey) {
+    function applyTableFilters() {
+      const monthKey = getSelectedMonthKey();
       const tbody = document.getElementById("expensesTableBody");
       if (!tbody) return;
-      const mData = getCurrentUserData().months[monthKey];
-      const list = (mData.expenses || []).slice().reverse();
 
+      const mData = getCurrentUserData().months[monthKey];
+      let list = [...((mData && mData.expenses) || [])];
+
+      // 1. Text Search Filter
+      const searchVal = (document.getElementById("expenseSearchInput")?.value || "").trim().toLowerCase();
+      if (searchVal) {
+        list = list.filter(exp => 
+          (exp.description && exp.description.toLowerCase().includes(searchVal)) ||
+          (exp.category && exp.category.toLowerCase().includes(searchVal)) ||
+          exp.amount.toString().includes(searchVal)
+        );
+      }
+
+      // 2. Category Filter
+      const categoryFilter = document.getElementById("expenseCategoryFilter")?.value || "ALL";
+      if (categoryFilter !== "ALL") {
+        list = list.filter(exp => exp.category === categoryFilter);
+      }
+
+      // 3. Funding Filter
+      const fundingFilter = document.getElementById("expenseFundingFilter")?.value || "ALL";
+      if (fundingFilter !== "ALL") {
+        if (fundingFilter === "settled") {
+          list = list.filter(exp => exp.settled);
+        } else {
+          list = list.filter(exp => exp.fundingSource === fundingFilter && !exp.settled);
+        }
+      }
+
+      // 4. Sorting
+      const sortOption = document.getElementById("expenseSortSelect")?.value || "date-desc";
+      list.sort((a, b) => {
+        if (sortOption === "date-desc") return new Date(b.date) - new Date(a.date);
+        if (sortOption === "date-asc") return new Date(a.date) - new Date(b.date);
+        if (sortOption === "amount-desc") return parseFloat(b.amount) - parseFloat(a.amount);
+        if (sortOption === "amount-asc") return parseFloat(a.amount) - parseFloat(b.amount);
+        if (sortOption === "category") return a.category.localeCompare(b.category);
+        return 0;
+      });
+
+      // Update Subtotal Summary
+      const totalFilteredAmount = list.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+      document.getElementById("filteredTotalSum").textContent = `${formatMoney(totalFilteredAmount)} ر.س`;
+      document.getElementById("filteredTotalCount").textContent = list.length;
+      document.getElementById("tableFilterSummaryText").textContent = `عرض ${list.length} من أصل ${(mData && mData.expenses ? mData.expenses.length : 0)} عملية`;
+
+      // Render Rows
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد مصروفات مسجلة لهذا الشهر.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">لا توجد عمليات تطابق معايير الفرز والبحث المحددة.</td></tr>`;
         return;
       }
 
@@ -1299,10 +1353,10 @@
         }
 
         tr.innerHTML = `
-          <td class="p-3.5 text-slate-400 whitespace-nowrap">${formatDateDisplay(exp.date)}</td>
+          <td class="p-3.5 text-slate-400 whitespace-nowrap font-mono">${formatDateDisplay(exp.date)}</td>
           <td class="p-3.5"><span class="px-2.5 py-1 rounded-md text-[11px] font-bold ${catColor}">${exp.category}</span></td>
           <td class="p-3.5 text-white font-medium">${exp.description || '-'}</td>
-          <td class="p-3.5 font-bold text-white whitespace-nowrap">${formatMoney(exp.amount)} <span class="text-[10px] text-slate-400">ر.س</span></td>
+          <td class="p-3.5 font-bold text-white whitespace-nowrap font-mono">${formatMoney(exp.amount)} <span class="text-[10px] text-slate-400 font-sans">ر.س</span></td>
           <td class="p-3.5">${fundLabel}</td>
           <td class="p-3.5">${statusBadge}</td>
           <td class="p-3.5 text-center whitespace-nowrap">
@@ -1347,7 +1401,6 @@
       }
     }
 
-    // التوجيه الذكي التلقائي للتاريخ
     async function handleSaveExpense(e) {
       e.preventDefault();
       const editId = document.getElementById("editingExpenseId").value;
@@ -1830,7 +1883,7 @@
       const trendLabels = allKeys.map(k => formatMonthNameDisplay(k));
       const cashData = allKeys.map(k => calculateMonthBaseSummary(k).cashSpent);
       const debtData = allKeys.map(k => calculateMonthBaseSummary(k).debtSpent);
-      const incomeData = allKeys.map(k => calculateMonthBaseSummary(k).totalIncome);
+      const incomeData = allKeys.map(k => calculateMonthBaseSummary(k).actualMonthIncome);
 
       const ctxTrend = document.getElementById("trendChart");
       if (ctxTrend) {
@@ -1842,7 +1895,7 @@
             datasets: [
               {
                 type: 'line',
-                label: 'الدخل الإجمالي',
+                label: 'الدخل الشهري الفعلي',
                 data: incomeData,
                 borderColor: '#10b981',
                 borderWidth: 2,
