@@ -29,8 +29,8 @@
     }
   </script>
 
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -64,9 +64,8 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen transition-colors duration-200">
 
-  <!-- ================= AUTH CONTAINER ================= -->
+  <!-- AUTH VIEW -->
   <div id="authContainer" class="flex min-h-screen items-center justify-center p-4">
-    <!-- Login Card -->
     <div id="loginCard" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8">
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 mb-3 border border-emerald-500/20 text-3xl">
@@ -79,14 +78,14 @@
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-sm font-semibold text-slate-300 mb-1">اسم المستخدم</label>
-          <input type="text" id="loginUsername" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" autocomplete="username" />
+          <input type="text" id="loginUsername" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500" autocomplete="username" />
         </div>
 
         <div>
           <label class="block text-sm font-semibold text-slate-300 mb-1">كلمة المرور</label>
           <div class="relative">
-            <input type="password" id="loginPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 pr-4 pl-11" autocomplete="current-password" />
-            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none p-1">
+            <input type="password" id="loginPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 pr-4 pl-11" autocomplete="current-password" />
+            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
               <i id="loginEyeIcon" class="fa-regular fa-eye"></i>
             </button>
           </div>
@@ -109,7 +108,7 @@
       </form>
     </div>
 
-    <!-- Password Recovery View -->
+    <!-- Password Recovery -->
     <div id="recoveryView" class="hidden w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8">
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 mb-2 border border-amber-500/20 text-2xl">
@@ -129,7 +128,7 @@
           <label class="block text-sm font-semibold text-slate-300 mb-1">رمز الاسترداد الأمني (PIN)</label>
           <div class="relative">
             <input type="password" id="recKey" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 pl-11 pr-4" />
-            <button type="button" onclick="togglePasswordVisibility('recKey', 'recKeyEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none p-1">
+            <button type="button" onclick="togglePasswordVisibility('recKey', 'recKeyEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
               <i id="recKeyEyeIcon" class="fa-regular fa-eye"></i>
             </button>
           </div>
@@ -139,7 +138,7 @@
           <label class="block text-sm font-semibold text-slate-300 mb-1">كلمة المرور الجديدة</label>
           <div class="relative">
             <input type="password" id="recNewPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 pl-11 pr-4" />
-            <button type="button" onclick="togglePasswordVisibility('recNewPassword', 'recEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none p-1">
+            <button type="button" onclick="togglePasswordVisibility('recNewPassword', 'recEyeIcon')" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1">
               <i id="recEyeIcon" class="fa-regular fa-eye"></i>
             </button>
           </div>
@@ -159,11 +158,12 @@
     </div>
   </div>
 
-  <!-- ================= MAIN APP VIEW ================= -->
+  <!-- MAIN APPLICATION -->
   <div id="appContainer" class="hidden min-h-screen flex flex-col">
     <!-- Header -->
     <header class="bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-40 backdrop-blur">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        <!-- User Badge -->
         <div class="flex items-center gap-3">
           <div class="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl shadow-inner">
             <i class="fa-solid fa-wallet"></i>
@@ -177,8 +177,9 @@
           </div>
         </div>
 
+        <!-- Toolbar Buttons -->
         <div class="flex flex-wrap items-center gap-2">
-          <div id="cloudStatusBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" title="متصل بسحابة Firebase Firestore">
+          <div id="cloudStatusBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>سحابي متصل</span>
           </div>
@@ -189,13 +190,13 @@
           </button>
 
           <div class="flex items-center bg-slate-700/70 rounded-xl p-1 border border-slate-600">
-            <button onclick="setTheme('light')" id="themeBtnLight" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition" title="نهاري"><i class="fa-solid fa-sun"></i></button>
-            <button onclick="setTheme('dark')" id="themeBtnDark" class="p-1.5 px-2 rounded-lg text-xs text-emerald-400 bg-slate-800 shadow transition" title="ليلي"><i class="fa-solid fa-moon"></i></button>
-            <button onclick="setTheme('system')" id="themeBtnSys" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition" title="حسب النظام"><i class="fa-solid fa-desktop"></i></button>
+            <button onclick="setTheme('light')" id="themeBtnLight" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-sun"></i></button>
+            <button onclick="setTheme('dark')" id="themeBtnDark" class="p-1.5 px-2 rounded-lg text-xs text-emerald-400 bg-slate-800 shadow transition"><i class="fa-solid fa-moon"></i></button>
+            <button onclick="setTheme('system')" id="themeBtnSys" class="p-1.5 px-2 rounded-lg text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-desktop"></i></button>
           </div>
 
           <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-700 rounded-xl px-2 py-1">
-            <button onclick="openNewMonthModal()" class="text-emerald-400 hover:text-emerald-300 p-1 text-sm font-bold" title="إضافة شهر جديد">+</button>
+            <button onclick="openNewMonthModal()" class="text-emerald-400 hover:text-emerald-300 p-1 text-sm font-bold" title="إضافة شهر">+</button>
             <select id="currentMonthSelect" onchange="switchMonth(this.value)" class="bg-transparent text-sm font-bold text-white focus:outline-none py-1 pr-1 pl-6 cursor-pointer"></select>
           </div>
 
@@ -205,7 +206,7 @@
           </button>
 
           <button onclick="openAddIncomeModal()" class="bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
-            <i class="fa-solid fa-plus-circle"></i>
+            <i class="fa-solid fa-circle-plus"></i>
             <span>دخل إضافي</span>
           </button>
 
@@ -214,16 +215,16 @@
             <span>تسجيل مصروف</span>
           </button>
 
-          <button onclick="handleLogout()" class="text-slate-400 hover:text-rose-400 p-2 text-base transition" title="تسجيل الخروج">
+          <button onclick="handleLogout()" class="text-slate-400 hover:text-rose-400 p-2 text-base transition">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Main Content Body -->
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 flex-1 w-full">
-      <!-- Debt Alert Notification (Banner) -->
+      <!-- Debt Alert Banner -->
       <div id="debtAlertBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
@@ -234,7 +235,7 @@
               <span class="text-xs px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300">مطلوب سدادها</span>
               <h4 class="font-bold text-white text-sm">تنبيه تمويل عجز الصرف: ديون مسجلة على البطاقات والسلف</h4>
             </div>
-            <p id="debtAlertMsg" class="text-xs text-slate-300 mt-0.5">لديك مديونية مستحقة نشأت بسبب تجاوز السيولة. يجب جدولتها في ميزانية الشهر القادم.</p>
+            <p id="debtAlertMsg" class="text-xs text-slate-300 mt-0.5"></p>
           </div>
         </div>
         <button onclick="openSettleDebtModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
@@ -243,17 +244,19 @@
         </button>
       </div>
 
-      <!-- Financial Metrics Cards Grid -->
+      <!-- Financial Metric Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- 1. Total Income & Carried Forward Balance -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">إجمالي الدخل الشهري</span>
+            <span class="text-xs font-semibold text-slate-400">إجمالي المتاح للشهر</span>
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm"><i class="fa-solid fa-money-bill-wave"></i></div>
           </div>
           <div class="text-xl font-bold text-white tracking-wide" id="cardTotalIncome">0.00 <span class="text-xs text-slate-400">ريال</span></div>
           <div class="text-[11px] text-slate-400 mt-1" id="cardIncomeBreakdown">راتب: 0.00 ر.س</div>
         </div>
 
+        <!-- 2. Total Expenses -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold text-slate-400">إجمالي المصروفات</span>
@@ -263,31 +266,74 @@
           <div class="text-[11px] text-slate-400 mt-1" id="cardExpenseBreakdown">0 عمليات</div>
         </div>
 
+        <!-- 3. Net Liquidity Surplus -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold text-slate-400">فائض السيولة النقدية</span>
             <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-sm"><i class="fa-solid fa-scale-balanced"></i></div>
           </div>
           <div class="text-xl font-bold tracking-wide" id="cardCashSurplus">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1" id="cardSurplusRatio">نسبة الفائض: 0%</div>
+          <div class="text-[11px] text-slate-400 mt-1" id="cardSurplusRatio">شاملاً الفائض المرحل</div>
         </div>
 
+        <!-- 4. Cumulative Savings Box -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold text-slate-400">صندوق الادخار التراكمي</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">متاح للسحب</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">مجمع كلياً</span>
           </div>
           <div class="text-xl font-bold text-cyan-400 tracking-wide" id="cardSavingsTotal">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1">متاح للسحب والتمويل المباشر</div>
+          <div class="text-[11px] text-slate-400 mt-1" id="cardSavingsSub">رصيد تراكمي لجميع الشهور</div>
         </div>
 
+        <!-- 5. Active Debt / Credit Cards -->
         <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-sm relative overflow-hidden">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold text-slate-400">ديون وبطاقات معلقة</span>
             <span id="debtCountBadge" class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">0 ذمة</span>
           </div>
           <div class="text-xl font-bold text-amber-400 tracking-wide" id="cardDebtTotal">0.00 <span class="text-xs text-slate-400">ريال</span></div>
-          <div class="text-[11px] text-slate-400 mt-1">يجب سدادها في ميزانية الشهر القادم</div>
+          <div class="text-[11px] text-slate-400 mt-1">واجبة السداد في الميزانية</div>
+        </div>
+      </div>
+
+      <!-- Advanced Financial Intelligence & Statistical Analytics -->
+      <div class="bg-gradient-to-r from-slate-800 via-slate-800 to-indigo-950/40 border border-indigo-500/30 rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-white text-base">تقرير التحليل الإحصائي ومسار الذكاء المالي</h3>
+                <span id="analyticsHealthBadge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">تحت السيطرة</span>
+              </div>
+              <p id="analyticsInsightDesc" class="text-xs text-slate-300 mt-0.5">تحليل مقارن يربط حركة الصرف الحالية بالشهور السابقة.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-medium" id="analyticsSavingsRate">نسبة الادخار الكلية: 0%</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-700/60">
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
+            <span class="text-[11px] text-slate-400 block mb-1">متوسط الصرف اليومي (Burn Rate)</span>
+            <span class="text-base font-bold text-white" id="statDailyBurn">0.00 ر.س / يوم</span>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
+            <span class="text-[11px] text-slate-400 block mb-1">الفائض المرحل من الشهر السابق</span>
+            <span class="text-base font-bold text-cyan-400" id="statCarriedForward">0.00 ر.س</span>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
+            <span class="text-[11px] text-slate-400 block mb-1">أعلى بند استهلاك بالشهر</span>
+            <span class="text-base font-bold text-amber-300" id="statTopCategory">-</span>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60">
+            <span class="text-[11px] text-slate-400 block mb-1">توقع الفائض بنهاية الشهر</span>
+            <span class="text-base font-bold text-emerald-400" id="statProjectedSurplus">0.00 ر.س</span>
+          </div>
         </div>
       </div>
 
@@ -329,7 +375,7 @@
             <h4 class="font-bold text-white text-sm">سجل العمليات والمصروفات للشهر الحالي</h4>
           </div>
           <div class="text-xs text-slate-400">
-            متابعة وسيلة التمويل: دخل شهري متاح، صندوق ادخار، أو بطاقة ائتمانية / سلفة
+            تتبع التمويل: دخل متاح، صندوق ادخار، أو بطاقة ائتمانية / سلفة
           </div>
         </div>
 
@@ -341,8 +387,8 @@
                 <th class="p-3.5">الفئة</th>
                 <th class="p-3.5">الوصف</th>
                 <th class="p-3.5">المبلغ</th>
-                <th class="p-3.5">مصدر التمويل</th>
-                <th class="p-3.5">حالة الترحيل</th>
+                <th class="p-3.5">طريقة الدفع</th>
+                <th class="p-3.5">الحالة والتسوية</th>
                 <th class="p-3.5 text-center">إجراء</th>
               </tr>
             </thead>
@@ -357,7 +403,7 @@
     </footer>
   </div>
 
-  <!-- ================= MODALS ================= -->
+  <!-- MODALS -->
 
   <!-- Modal: Settle Debt (Roll to Next Month) -->
   <div id="settleDebtModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
@@ -372,14 +418,14 @@
 
       <div class="p-5 space-y-4 text-xs">
         <p class="text-slate-300 leading-relaxed">
-          سيقوم النظام بتسجيل هذه المديونية وترحيلها كبند سداد مستحق في ميزانية الشهر القادم بمبلغ إجمالي:
+          سيقوم النظام بتسجيل التزام سداد في ميزانية الشهر القادم بمبلغ إجمالي:
         </p>
         <div class="text-center py-3 bg-slate-900/80 rounded-xl border border-slate-700">
           <span id="settleDebtModalAmount" class="text-2xl font-bold text-amber-400">0.00 ر.س</span>
         </div>
         <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-300">
           <i class="fa-solid fa-shield-check ml-1"></i>
-          <strong>ملاحظة هامة:</strong> ستبقى العمليات ومصروفاتها التفصيلية محفوظة وظاهرة في شهرها الحالي ومصنفة بـ <span class="underline font-bold">(تمت التسوية والترحيل)</span> لتوثيق بنود الصرف التاريخية.
+          <strong>حماية السجل التاريخي:</strong> ستبقى العمليات ومصروفاتها التفصيلية محفوظة في شهرها الحالي ومصنفة بـ <span class="underline font-bold">(تمت التسوية والترحيل)</span> دون حذف.
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-700">
@@ -402,7 +448,7 @@
       </div>
 
       <div class="bg-slate-900/40 px-5 py-3 border-b border-slate-700/50 flex items-center justify-between text-xs">
-        <span class="text-slate-400">الرصيد النقدي المتوفر المتبقي من الدخل:</span>
+        <span class="text-slate-400">الرصيد النقدي المتوفر المتبقي من الدخل والفائض:</span>
         <span id="modalCurrentAvailableCash" class="font-bold text-emerald-400 text-sm">0.00 ر.س</span>
       </div>
 
@@ -476,7 +522,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
       <div class="p-4 bg-slate-900/80 border-b border-slate-700 flex items-center justify-between">
         <h3 class="font-bold text-white text-base flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-cyan-400"></i>
+          <i class="fa-solid fa-circle-plus text-cyan-400"></i>
           <span>إضافة دخل متغير / إضافي</span>
         </h3>
         <button onclick="closeAddIncomeModal()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -725,7 +771,7 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT APPLICATION CORE ================= -->
+  <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAtCIZSXO0JoZXpDKtwuKW0a6ybJMmXDSo",
@@ -814,11 +860,8 @@
           allowanceEffectiveMonth: u.allowanceEffectiveDate || u.allowanceEffectiveMonth || ""
         };
 
-        let userSavings = 0;
         let userMonths = {};
-
         if (rawState.userFinancials && rawState.userFinancials[uKey]) {
-          userSavings = parseFloat(rawState.userFinancials[uKey].savingsBox) || 0;
           userMonths = rawState.userFinancials[uKey].months || {};
         } else if (u.months) {
           userMonths = u.months;
@@ -864,7 +907,7 @@
         }
 
         normalized.userFinancials[uKey] = {
-          savingsBox: userSavings,
+          savingsBox: (rawState.userFinancials && rawState.userFinancials[uKey] && parseFloat(rawState.userFinancials[uKey].savingsBox)) || 0,
           months: cleanMonths
         };
       }
@@ -986,10 +1029,46 @@
       return sal;
     }
 
-    function calculateMonthSummary(monthKey) {
-      ensureMonthExists(monthKey);
+    // حساب الرصيد التراكمي الشامل لصندوق الادخار عبر كافة الشهور
+    function calculateTotalCumulativeSavings() {
+      const uData = getCurrentUserData();
+      let totalSaved = 0;
+      let totalWithdrawn = 0;
+
+      for (const [mKey, mVal] of Object.entries(uData.months || {})) {
+        (mVal.expenses || []).forEach(e => {
+          const amt = parseFloat(e.amount) || 0;
+          if (e.category === "ادخار واستثمار" && e.fundingSource === "income") {
+            totalSaved += amt;
+          }
+          if (e.fundingSource === "savings") {
+            totalWithdrawn += amt;
+          }
+        });
+      }
+
+      const balance = (uData.savingsBox || 0) + totalSaved - totalWithdrawn;
+      return Math.max(0, balance);
+    }
+
+    // حساب الفائض النقدي المرحل من الشهر السابق مباشرة
+    function calculateCarriedForwardSurplus(targetMonthKey) {
+      const uData = getCurrentUserData();
+      const allKeys = Object.keys(uData.months || {}).sort();
+      const currentIndex = allKeys.indexOf(targetMonthKey);
+      
+      if (currentIndex <= 0) return 0; // أول شهر لا يملك شهراً سابقاً
+      
+      const prevMonthKey = allKeys[currentIndex - 1];
+      const prevSummary = calculateMonthBaseSummary(prevMonthKey);
+      
+      return Math.max(0, prevSummary.cashSurplus);
+    }
+
+    function calculateMonthBaseSummary(monthKey) {
       const uData = getCurrentUserData();
       const mData = uData.months[monthKey];
+      if (!mData) return { totalIncome: 0, cashSpent: 0, debtSpent: 0, cashSurplus: 0, totalExpenses: 0 };
 
       const baseSal = getMonthSalary(monthKey);
       const totalVarIncome = (mData.variableIncomes || []).reduce((acc, i) => acc + (parseFloat(i.amount) || 0), 0);
@@ -1002,19 +1081,13 @@
       (mData.expenses || []).forEach(e => {
         const amt = parseFloat(e.amount) || 0;
         if (e.fundingSource === "credit_card" || e.fundingSource === "loan") {
-          // فقط الديون غير المسواة تُحتسب كعجز قائم
-          if (!e.settled) {
-            debtSpent += amt;
-          }
+          if (!e.settled) debtSpent += amt;
         } else if (e.fundingSource === "savings") {
           savingsSpent += amt;
         } else {
           cashSpent += amt;
         }
       });
-
-      const cashSurplus = totalIncome - cashSpent;
-      const totalExpenses = cashSpent + debtSpent + savingsSpent;
 
       return {
         monthKey,
@@ -1024,16 +1097,78 @@
         cashSpent,
         debtSpent,
         savingsSpent,
-        cashSurplus,
-        totalExpenses,
+        cashSurplus: totalIncome - cashSpent,
+        totalExpenses: cashSpent + debtSpent + savingsSpent,
         expensesCount: (mData.expenses || []).length,
         hasDebt: debtSpent > 0
       };
     }
 
+    function calculateMonthSummary(monthKey) {
+      ensureMonthExists(monthKey);
+      const baseSummary = calculateMonthBaseSummary(monthKey);
+      const carriedSurplus = calculateCarriedForwardSurplus(monthKey);
+
+      // إضافة الفائض المرحل من الشهر السابق للدخل المتاح الصافي
+      const effectiveTotalAvailable = baseSummary.totalIncome + carriedSurplus;
+      const netCashSurplus = effectiveTotalAvailable - baseSummary.cashSpent;
+
+      return {
+        ...baseSummary,
+        carriedForwardSurplus: carriedSurplus,
+        effectiveTotalAvailable: effectiveTotalAvailable,
+        cashSurplus: netCashSurplus
+      };
+    }
+
+    // وحدة التحليل الإحصائي والذكاء المالي
+    function generateSmartFinancialAnalytics(activeMonthKey) {
+      const summary = calculateMonthSummary(activeMonthKey);
+      const uData = getCurrentUserData();
+      const mData = uData.months[activeMonthKey];
+      const expenses = (mData && mData.expenses) || [];
+
+      // 1. حساب متوسط الصرف اليومي (Burn Rate)
+      const now = new Date();
+      const dayOfMonth = Math.max(1, now.getDate());
+      const dailyBurn = summary.cashSpent > 0 ? (summary.cashSpent / dayOfMonth) : 0;
+
+      // 2. أعلى فئة مستهلكة في الشهر
+      const catMap = {};
+      expenses.forEach(e => {
+        const amt = parseFloat(e.amount) || 0;
+        catMap[e.category] = (catMap[e.category] || 0) + amt;
+      });
+
+      let topCategory = "لا توجد مصروفات";
+      let topCategoryAmount = 0;
+      for (const [cat, amt] of Object.entries(catMap)) {
+        if (amt > topCategoryAmount) {
+          topCategoryAmount = amt;
+          topCategory = `${cat} (${formatMoney(amt)} ر.س)`;
+        }
+      }
+
+      // 3. نسبة الادخار
+      const totalSavings = calculateTotalCumulativeSavings();
+      const savingsRate = summary.effectiveTotalAvailable > 0 ? ((totalSavings / (summary.baseSalary * 12)) * 100).toFixed(1) : 0;
+
+      // 4. توقع الفائض بنهاية الشهر
+      const daysInMonth = 30;
+      const projectedTotalSpent = dailyBurn * daysInMonth;
+      const projectedSurplus = summary.effectiveTotalAvailable - projectedTotalSpent;
+
+      return {
+        dailyBurn,
+        topCategory,
+        carriedForward: summary.carriedForwardSurplus,
+        savingsRate,
+        projectedSurplus
+      };
+    }
+
     function renderApp() {
       const user = getCurrentUser();
-      const uData = getCurrentUserData();
       const activeMonthKey = getSelectedMonthKey();
       ensureMonthExists(activeMonthKey);
 
@@ -1055,34 +1190,46 @@
 
       const summary = calculateMonthSummary(activeMonthKey);
 
-      document.getElementById("cardTotalIncome").innerHTML = `${formatMoney(summary.totalIncome)} <span class="text-xs text-slate-400">ريال</span>`;
-      document.getElementById("cardIncomeBreakdown").textContent = `راتب: ${formatMoney(summary.baseSalary)} | إضافي: ${formatMoney(summary.totalVarIncome)} ر.س`;
+      // Card 1: Total Available
+      document.getElementById("cardTotalIncome").innerHTML = `${formatMoney(summary.effectiveTotalAvailable)} <span class="text-xs text-slate-400">ريال</span>`;
+      document.getElementById("cardIncomeBreakdown").textContent = `راتب: ${formatMoney(summary.baseSalary)} | مرحّل: ${formatMoney(summary.carriedForwardSurplus)} ر.س`;
 
+      // Card 2: Expenses
       document.getElementById("cardTotalExpenses").innerHTML = `${formatMoney(summary.totalExpenses)} <span class="text-xs text-slate-400">ريال</span>`;
-      document.getElementById("cardExpenseBreakdown").textContent = `${summary.expensesCount} عمليات (نقد: ${formatMoney(summary.cashSpent)} / دين معلق: ${formatMoney(summary.debtSpent)})`;
+      document.getElementById("cardExpenseBreakdown").textContent = `${summary.expensesCount} عمليات (نقد: ${formatMoney(summary.cashSpent)} / دين: ${formatMoney(summary.debtSpent)})`;
 
+      // Card 3: Net Liquidity
       const surplusElem = document.getElementById("cardCashSurplus");
       surplusElem.innerHTML = `${summary.cashSurplus >= 0 ? '+' : ''}${formatMoney(summary.cashSurplus)} <span class="text-xs text-slate-400">ريال</span>`;
       surplusElem.className = `text-xl font-bold tracking-wide ${summary.cashSurplus >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-      
-      const ratio = summary.totalIncome > 0 ? ((summary.cashSurplus / summary.totalIncome) * 100).toFixed(1) : 0;
-      document.getElementById("cardSurplusRatio").textContent = `نسبة الفائض: ${ratio}% من الدخل`;
+      document.getElementById("cardSurplusRatio").textContent = `فائض صافي مع السيولة السابقة`;
 
-      document.getElementById("cardSavingsTotal").innerHTML = `${formatMoney(uData.savingsBox || 0)} <span class="text-xs text-slate-400">ريال</span>`;
+      // Card 4: Cumulative Savings Box
+      const totalCumulativeSavings = calculateTotalCumulativeSavings();
+      document.getElementById("cardSavingsTotal").innerHTML = `${formatMoney(totalCumulativeSavings)} <span class="text-xs text-slate-400">ريال</span>`;
 
+      // Card 5: Debts Outstanding
       document.getElementById("cardDebtTotal").innerHTML = `${formatMoney(summary.debtSpent)} <span class="text-xs text-slate-400">ريال</span>`;
       const debtBadge = document.getElementById("debtCountBadge");
-      const activeDebtsCount = (uData.months[activeMonthKey].expenses || []).filter(e => (e.fundingSource === "credit_card" || e.fundingSource === "loan") && !e.settled).length;
+      const activeDebtsCount = (getCurrentUserData().months[activeMonthKey].expenses || []).filter(e => (e.fundingSource === "credit_card" || e.fundingSource === "loan") && !e.settled).length;
       debtBadge.textContent = `${activeDebtsCount} ذمة`;
 
-      // Debt Banner Alert Logic
+      // Debt Notification Banner
       const debtAlertBanner = document.getElementById("debtAlertBanner");
       if (summary.hasDebt) {
         debtAlertBanner.classList.remove("hidden");
-        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال (على البطاقات أو السلف) نشأت بسبب تجاوز السيولة. يجب جدولتها في ميزانية الشهر القادم.`;
+        document.getElementById("debtAlertMsg").textContent = `لديك مديونية مستحقة بقيمة ${formatMoney(summary.debtSpent)} ريال (على البطاقات أو السلف).`;
       } else {
         debtAlertBanner.classList.add("hidden");
       }
+
+      // Render Analytics Panel
+      const analytics = generateSmartFinancialAnalytics(activeMonthKey);
+      document.getElementById("statDailyBurn").textContent = `${formatMoney(analytics.dailyBurn)} ر.س / يوم`;
+      document.getElementById("statCarriedForward").textContent = `+${formatMoney(analytics.carriedForward)} ر.س`;
+      document.getElementById("statTopCategory").textContent = analytics.topCategory;
+      document.getElementById("statProjectedSurplus").textContent = `${analytics.projectedSurplus >= 0 ? '+' : ''}${formatMoney(analytics.projectedSurplus)} ر.س`;
+      document.getElementById("analyticsSavingsRate").textContent = `إجمالي الادخار التراكمي: ${formatMoney(totalCumulativeSavings)} ر.س`;
 
       renderExpensesTable(activeMonthKey);
       updateCharts(activeMonthKey);
@@ -1131,7 +1278,7 @@
 
         let fundLabel = `<span class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-wallet"></i> الدخل المتاح</span>`;
         if (exp.fundingSource === "credit_card") {
-          fundLabel = `<span class="text-amber-400 font-bold flex items-center gap-1"><i class="fa-solid fa-credit-card"></i> بطاقة ائتمانية (دين)</span>`;
+          fundLabel = `<span class="text-amber-400 font-bold flex items-center gap-1"><i class="fa-solid fa-credit-card"></i> بطاقة ائتمانية</span>`;
         } else if (exp.fundingSource === "loan") {
           fundLabel = `<span class="text-amber-300 font-bold flex items-center gap-1"><i class="fa-solid fa-hand-holding-dollar"></i> سلفة شخصية</span>`;
         } else if (exp.fundingSource === "savings") {
@@ -1207,9 +1354,11 @@
       const uData = getCurrentUserData();
       const mData = uData.months[activeMonthKey];
 
+      // التحقق من رصيد الادخار التراكمي الشامل
       if (source === "savings") {
-        if (amount > (uData.savingsBox || 0)) {
-          alert("رصيد صندوق الادخار التراكمي غير كافٍ لتغطية هذا المبلغ!");
+        const availableSavings = calculateTotalCumulativeSavings();
+        if (amount > availableSavings) {
+          alert(`رصيد صندوق الادخار التراكمي المتاح (${formatMoney(availableSavings)} ر.س) غير كافٍ لتغطية هذا المبلغ!`);
           return;
         }
       }
@@ -1217,9 +1366,6 @@
       if (editId) {
         const idx = mData.expenses.findIndex(x => x.id === editId);
         if (idx !== -1) {
-          if (mData.expenses[idx].fundingSource === "savings") {
-            uData.savingsBox = (uData.savingsBox || 0) + mData.expenses[idx].amount;
-          }
           mData.expenses[idx] = {
             id: editId,
             amount,
@@ -1230,17 +1376,8 @@
             isEmergency,
             settled: mData.expenses[idx].settled || false
           };
-          if (source === "savings") {
-            uData.savingsBox = Math.max(0, (uData.savingsBox || 0) - amount);
-          }
         }
       } else {
-        if (source === "savings") {
-          uData.savingsBox = Math.max(0, (uData.savingsBox || 0) - amount);
-        } else if (category === "ادخار واستثمار" && source === "income") {
-          uData.savingsBox = (uData.savingsBox || 0) + amount;
-        }
-
         mData.expenses.push({
           id: 'exp_' + Date.now(),
           amount,
@@ -1285,15 +1422,6 @@
       const activeMonthKey = getSelectedMonthKey();
       const uData = getCurrentUserData();
       const mData = uData.months[activeMonthKey];
-      
-      const exp = (mData.expenses || []).find(x => x.id === id);
-      if (exp) {
-        if (exp.fundingSource === "savings") {
-          uData.savingsBox = (uData.savingsBox || 0) + exp.amount;
-        } else if (exp.category === "ادخار واستثمار" && exp.fundingSource === "income") {
-          uData.savingsBox = Math.max(0, (uData.savingsBox || 0) - exp.amount);
-        }
-      }
 
       mData.expenses = (mData.expenses || []).filter(x => x.id !== id);
       await persistState();
@@ -1336,7 +1464,7 @@
       if (select && select.value) return select.value;
       const uData = getCurrentUserData();
       const keys = Object.keys(uData.months || {}).sort().reverse();
-      return keys[0] || "2026-09";
+      return keys[0] || "2026-10";
     }
 
     function switchMonth(monthKey) {
@@ -1396,7 +1524,6 @@
       ensureMonthExists(nextMonthKey);
       const uData = getCurrentUserData();
 
-      // 1. إضافة قيد السداد في ميزانية الشهر الجديد
       uData.months[nextMonthKey].expenses.push({
         id: 'settle_' + Date.now(),
         amount: sum.debtSpent,
@@ -1408,16 +1535,15 @@
         settled: false
       });
 
-      // 2. تحديث عمليات الشهر الماضي كمسواة دون حذفها أو تغيير مصدر تمويلها الأصلي
       (uData.months[activeMonthKey].expenses || []).forEach(e => {
         if ((e.fundingSource === "credit_card" || e.fundingSource === "loan") && !e.settled) {
-          e.settled = true; // تم ترحيلها وتسويتها محاسبياً
+          e.settled = true;
         }
       });
 
       await persistState();
       closeSettleDebtModal();
-      alert(`تم ترحيل المديونية (${formatMoney(sum.debtSpent)} ر.س) بنجاح إلى ميزانية شهر (${nextMonthKey})، مع بقاء كافة التفاصيل موثقة في الشهر الحالي.`);
+      alert(`تم ترحيل المديونية (${formatMoney(sum.debtSpent)} ر.س) بنجاح إلى ميزانية شهر (${nextMonthKey})، مع بقاء كافة التفاصيل موثقة تاريخياً.`);
       renderApp();
     }
 
@@ -1666,9 +1792,9 @@
       const allKeys = Object.keys(uData.months || {}).sort();
 
       const trendLabels = allKeys.map(k => formatMonthNameDisplay(k));
-      const cashData = allKeys.map(k => calculateMonthSummary(k).cashSpent);
-      const debtData = allKeys.map(k => calculateMonthSummary(k).debtSpent);
-      const incomeData = allKeys.map(k => calculateMonthSummary(k).totalIncome);
+      const cashData = allKeys.map(k => calculateMonthBaseSummary(k).cashSpent);
+      const debtData = allKeys.map(k => calculateMonthBaseSummary(k).debtSpent);
+      const incomeData = allKeys.map(k => calculateMonthBaseSummary(k).totalIncome);
 
       const ctxTrend = document.getElementById("trendChart");
       if (ctxTrend) {
